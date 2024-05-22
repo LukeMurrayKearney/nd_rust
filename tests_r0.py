@@ -22,7 +22,7 @@ for data in data_names:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         
         # find suitable tau for r0
-        result = nd_p.test_r0(partitions=partitions, network_params=params, contact_matrix=contact_matrix, iterations=30, n=n, prop_infec=10/n, r0=r0, dist_type=model)
+        result = nd_p.fit_to_r0(partitions=partitions, network_params=params, contact_matrix=contact_matrix, iterations=30, n=n, prop_infec=10/n, r0=r0, dist_type=model)
         # simulate outbreaks with r0
         infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=result['tau'], iterations=iters, n=n, dist_type=model, prop_infec=10/n)
         # save outputs
@@ -35,7 +35,7 @@ for data in data_names:
 data = data_names[0]
 for i, model in enumerate(models):
     print(f'{data}: {model}', flush=True)
-    con{tact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
+    contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
     if model == 'sbm':
         params = []
     else:
@@ -43,4 +43,4 @@ for i, model in enumerate(models):
     infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=taus[i], iterations=iters, n=n, dist_type=model, prop_infec=10/n)
     # save outputs
     with open(f'output_data/simulations/sims_compare_{r0}_{data}_{model}.json', 'w') as file:
-        json.dump(infections, file)}
+        json.dump(infections, file)
