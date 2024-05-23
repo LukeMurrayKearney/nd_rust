@@ -79,7 +79,7 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Ve
 
 
 #[pyfunction]
-fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, cavity: bool, parameters: Vec<f64>, maxtime: usize, prop_infec: f64) -> PyResult<Py<PyDict>>{
+fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, parameters: Vec<f64>, maxtime: usize, prop_infec: f64) -> PyResult<Py<PyDict>>{
     
     let mut infections: Vec<Vec<Vec<usize>>> = vec![vec![Vec::new()]; partitions.len()];
     let mut final_sizes: Vec<usize> = Vec::new();
