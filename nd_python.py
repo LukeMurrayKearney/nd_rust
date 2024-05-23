@@ -37,7 +37,7 @@ def build_network(n, partitions, contact_matrix, params=None, dist_type ="nbinom
         network = nd_r.network_from_vars(n, partitions, dist_type, params, contact_matrix)
     return network
 
-def fit_to_r0(partitions, contact_matrix, r0=3, network_params=None, iterations=30, n=30_000, dist_type='nbinom', cavity=False, inv_gamma=4, prop_infec=1e-3, num_networks=30, num_restarts=30):
+def fit_to_r0(partitions, contact_matrix, r0=3, network_params=None, iterations=30, n=30_000, dist_type='nbinom', inv_gamma=4, prop_infec=1e-3, num_networks=30, num_restarts=30):
     
     outbreak_parameters = [r0, inv_gamma]
     partitions = [int(a) for a in partitions]
