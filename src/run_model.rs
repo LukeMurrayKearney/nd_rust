@@ -6,7 +6,7 @@ use rand_distr::Distribution;
 use rayon::prelude::*;
 
 
-pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected: f64) -> 
+pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected: f64, scaling: &str) -> 
     (Vec<Vec<usize>>, Vec<Vec<usize>>, Vec<usize>, Vec<usize>, Vec<usize>)  {
 
     // infect a proportion of the population
@@ -33,7 +33,7 @@ pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &m
     //start simulation
     for _ in 0..maxtime {
         // step a day
-        step_tau_leap(network_structure, network_properties, &mut rng);
+        step_tau_leap(network_structure, network_properties, &mut rng, scaling);
         // append all individual states to results at the end of the day
         individual_results.push(
             network_properties.nodal_states
@@ -58,14 +58,14 @@ pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &m
 }
 
 
-pub fn abc_r0(network_structure: &NetworkStructure, properties: &mut NetworkProperties, initially_infected: f64, target_r0: f64, iters: usize, n: usize, cavity: bool) -> f64 {
+pub fn abc_r0(network_structure: &NetworkStructure, properties: &mut NetworkProperties, initially_infected: f64, target_r0: f64, iters: usize, n: usize, cavity: bool, scaling: &str) -> f64 {
        
     // randomly sample a vector of Exply distributed values for prior
     let mut rng = rand::thread_rng();
     let exp = Exp::new(10.).unwrap(); // lambda = 5, gives P(x<1) > 0.99
     let samples: Vec<f64> = (0..iters).map(|_| exp.sample(&mut rng)).collect();
 
-    let r0s = r0_from_taus(network_structure, properties, initially_infected, n, &samples, cavity);
+    let r0s = r0_from_taus(network_structure, properties, initially_infected, n, &samples, cavity, scaling);
     
 
     // find the best few and find the best of these with more samples
@@ -77,7 +77,7 @@ pub fn abc_r0(network_structure: &NetworkStructure, properties: &mut NetworkProp
         samples[i]
         }).collect();
     
-    let r0s = r0_from_taus(network_structure, properties, initially_infected, 2*n, &curr_best, cavity);
+    let r0s = r0_from_taus(network_structure, properties, initially_infected, 2*n, &curr_best, cavity, scaling);
     
     //return minimum
     let r0_differences: Vec<f64> = r0s.iter().map(|&r0| (r0 - target_r0).abs()).collect();
@@ -88,7 +88,7 @@ pub fn abc_r0(network_structure: &NetworkStructure, properties: &mut NetworkProp
 
 }
 
-fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkProperties, initially_infected: f64, n: usize, samples: &Vec<f64>, cavity: bool) -> Vec<f64> {
+fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkProperties, initially_infected: f64, n: usize, samples: &Vec<f64>, cavity: bool, scaling: &str) -> Vec<f64> {
     // loop through samples in parallel
     let r0s: Vec<f64> = samples.par_iter()
         .map(|&tau| {
@@ -110,7 +110,7 @@ fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkPr
                     // step a day
                     match cavity {
                         true => step_cavity(network_structure, &mut network_properties, &mut rng, day + 1),
-                        _ => step_tau_leap(network_structure, &mut network_properties, &mut rng)
+                        _ => step_tau_leap(network_structure, &mut network_properties, &mut rng, scaling)
                     }
 
                     // check if there are any generation 3 people still infected
@@ -158,7 +158,7 @@ fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkPr
     r0s
 }
 
-fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, rng: &mut ThreadRng) {
+fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, rng: &mut ThreadRng, scaling: &str) {
     // save next states to update infection simultaneously 
     let mut next_states: Vec<State> = vec![State::Susceptible; network_structure.degrees.len()];
     // indices to update generation number
@@ -185,7 +185,13 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
                     match network_properties.nodal_states[link.1] {
                         State::Susceptible => {
                             // check if infection is passed
-                            if rng.gen::<f64>() < network_properties.parameters[0] {
+                            let infection_prob = match scaling {
+                                "log" => network_properties.parameters[0] / (network_structure.degrees[i] as f64).ln(),
+                                "sqrt" => network_properties.parameters[0] / (network_structure.degrees[i] as f64).sqrt(),
+                                "linear" => network_properties.parameters[0] / (network_structure.degrees[i] as f64),
+                                _ => network_properties.parameters[0]
+                            };
+                            if rng.gen::<f64>() < infection_prob {
                                 // make infected at next step
                                 next_states[link.1] = State::Infected(poisson_infectious_period.sample(rng).round() as usize);
                                 // add to secondary cases for infected individual
