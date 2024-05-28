@@ -50,7 +50,7 @@ pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &m
         // collect summary days summer stats
         seir_results.push(network_properties.count_states());
         // check if there is infetion in the population
-        if seir_results.last().unwrap()[1] == 0 && seir_results.last().unwrap()[2] == 0 {
+        if seir_results.last().unwrap()[1] == 0 {
             break;
         }
     }
@@ -65,7 +65,7 @@ pub fn abc_r0(network_structure: &NetworkStructure, properties: &mut NetworkProp
     let exp = Exp::new(10.).unwrap(); // lambda = 5, gives P(x<1) > 0.99
     let samples: Vec<f64> = (0..iters).map(|_| exp.sample(&mut rng)).collect();
 
-    let r0s = r0_from_taus(network_structure, properties, initially_infected, target_r0, n, &samples, cavity);
+    let r0s = r0_from_taus(network_structure, properties, initially_infected, n, &samples, cavity);
     
 
     // find the best few and find the best of these with more samples
@@ -77,7 +77,7 @@ pub fn abc_r0(network_structure: &NetworkStructure, properties: &mut NetworkProp
         samples[i]
         }).collect();
     
-    let r0s = r0_from_taus(network_structure, properties, initially_infected, target_r0, 2*n, &curr_best, cavity);
+    let r0s = r0_from_taus(network_structure, properties, initially_infected, 2*n, &curr_best, cavity);
     
     //return minimum
     let r0_differences: Vec<f64> = r0s.iter().map(|&r0| (r0 - target_r0).abs()).collect();
@@ -88,7 +88,7 @@ pub fn abc_r0(network_structure: &NetworkStructure, properties: &mut NetworkProp
 
 }
 
-fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkProperties, initially_infected: f64, target_r0: f64, n: usize, samples: &Vec<f64>, cavity: bool) -> Vec<f64> {
+fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkProperties, initially_infected: f64, n: usize, samples: &Vec<f64>, cavity: bool) -> Vec<f64> {
     // loop through samples in parallel
     let r0s: Vec<f64> = samples.par_iter()
         .map(|&tau| {
@@ -262,7 +262,7 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
 //         // collect summary days summer stats
 //         seir_results.push(network_properties.count_states());
 //         // check if there is infetion in the population
-//         if seir_results.last().unwrap()[1] == 0 && seir_results.last().unwrap()[2] == 0 {
+//         if seir_results.last().unwrap()[1] == 0 {
 //             break;
 //         }
 //     }

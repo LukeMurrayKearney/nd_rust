@@ -1,8 +1,8 @@
 use distributions::median;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict};
+use pyo3::types::PyDict;
 use crate::dpln::{pdf, sample};
-use crate::run_model::{abc_r0};
+use crate::run_model::abc_r0;
 
 mod network_structure;
 mod distributions;
@@ -56,7 +56,7 @@ fn sbm_from_vars(n: usize, partitions: Vec<usize>, contact_matrix: Vec<Vec<f64>>
 fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, parameters: Vec<f64>, prop_infec: f64, num_networks: usize, target_r0: f64, iters: usize, num_replays: usize) -> PyResult<Py<PyDict>> {
     
     let mut taus = Vec::new();
-    for i in 0..num_networks {
+    for _ in 0..num_networks {
         let network: network_structure::NetworkStructure = match dist_type { 
             "sbm" => {
                 network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
@@ -97,7 +97,7 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
             _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &params, &contact_matrix)
         };
         let mut properties = network_properties::NetworkProperties::new(&network, &parameters);
-        let (individuals, seir, generation, secondary_cases, infected_by) = run_model::run_tau_leap(&network, &mut properties, maxtime, prop_infec);
+        let (individuals, seir, generation, secondary_cases, _) = run_model::run_tau_leap(&network, &mut properties, maxtime, prop_infec);
         // return final size of iteration
         peak_times.push(seir.iter().enumerate().max_by_key(|&(_, inner_vec)| inner_vec[2]).map(|(index, _)| index).unwrap());
         final_sizes.push(*seir.last().unwrap().last().unwrap());
@@ -124,7 +124,7 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
                 }
                 infections[i][t].push(0);
             }
-            for (i, _) in people.iter().enumerate().filter(|(_, state)| match state {1 | 2 => true, _ => false}) {
+            for (i, _) in people.iter().enumerate().filter(|(_, state)| match state {1 => true, _ => false}) {
                 let mut last = 0;
                 match infections[network.ages[i]][t].len() {
                     0 => infections[network.ages[i]][t].push(0),

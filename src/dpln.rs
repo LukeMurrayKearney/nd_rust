@@ -425,12 +425,7 @@ fn gen_nu_tau(z: Vec<f64>, params: &Vec<f64>, tau: f64, rng: &mut ThreadRng) -> 
     // variance of z
     let s2: f64 = z.clone().variance();
     
-    let mut apost: f64 = 0.0;
-    if a.abs() < 0.0001 {
-        apost = a + n - 1.0;
-    } else {
-        apost = a + n;
-    }
+    let apost: f64 = if a.abs() < 0.0001 { a + n - 1.0 } else { a + n };
     let bpost = b + (n - 1.0)*s2 + (k*n/(k + n))*((zbar - m).powi(2));
     if Gamma::new(apost/2.0, bpost/2.0).is_err() {
         let gamma = Gamma::new(a/2.0, b/2.0).unwrap();
