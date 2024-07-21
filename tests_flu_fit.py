@@ -13,7 +13,7 @@ models = ['sbm','nbinom','dpln']
 
 contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_poly.csv', delimiter=',')
 
-params = np.genfromtxt(f'input_data/parameters/params_poly_{model}.csv', delimiter=',')
+params = np.genfromtxt(f'input_data/parameters/params_poly_{models[0]}.csv', delimiter=',')
 
 df_outbreak = pd.read_json('input_data/fit_sims/influenza_hospitalisations.json')
 

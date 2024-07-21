@@ -71,7 +71,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
 fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partitions: &Vec<usize>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, contact_matrix: &Vec<Vec<f64>>, dist_type: &str, tau: f64, proportion_hosp: f64) -> f64 {
 
     let mut ll = 0.;
-    if tau >= 0. {
+    if tau >= 0. && tau < 1. {
         let parameters = outbreak_params.iter().enumerate().map(|(i, &x)| {
             if i == 0 {tau} else {x}
         }).collect::<Vec<f64>>();
