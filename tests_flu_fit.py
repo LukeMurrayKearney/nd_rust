@@ -19,6 +19,6 @@ days = list(range(6,len(df_outbreak['hospitalisations'])*7,7))
 # 
 taus = nd_p.mcmc(data=data, days=days, partitions=partitions, contact_matrix=contact_matrix,network_params=[], outbreak_params=[0.1,5], dist_type='sbm')
 
-np.savetxt('output_data/fit_to_data/sbm_mcmc_taus.csv')
+np.savetxt('output_data/fit_to_data/sbm_mcmc_taus.csv', taus, delimiter=',')
 
         
