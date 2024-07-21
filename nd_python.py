@@ -10,6 +10,10 @@ from scipy.optimize import minimize
 plt.rcParams.update({'font.size': 14})  # Adjust the font size
 
 ################################## build into a package ##################################
+def mcmc(data, days, partitions, contact_matrix, network_params, outbreak_params, tau_0=0.1, p_hosp=0.01, iters=10_000, dist_type='nbinom', n=20_000, prior_param=5):
+    partitions = [int(a) for a in partitions]
+    nd_r.mcmc_data(data=data, days=days, tau_0=tau_0, proportion_hosp=p_hosp, iters=iters, dist_type=dist_type, n=n, partitions=partitions, contact_matrix=contact_matrix, network_params=network_params, outbreak_params=outbreak_params, prior_param=prior_param)
+
 def fit_to_data(df = None, input_file_path = 'input_data/polymod_df.csv', dist_type = "nbinom", buckets = np.array([5,12,18,30,40,50,60,70]), save_fig = True, output_file_path=None, log=False, to_csv=False, fig_data_file='',num_bins=15):
 
     # Call the function with the provided arguments

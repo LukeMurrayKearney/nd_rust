@@ -1,9 +1,132 @@
+// use crate::dpln::Parameters;
 use crate::network_structure::NetworkStructure;
 use crate::network_properties::{NetworkProperties, State};
 use rand::{rngs::ThreadRng, seq::SliceRandom, Rng};
-use statrs::distribution::{Poisson,Exp};
-use rand_distr::Distribution;
+// use rand_distr::num_traits::{Pow, ToBytes};
+use statrs::distribution::{Continuous, Discrete, Exp, Geometric, Normal, Poisson, Uniform};
+use rand_distr::{uniform, Binomial, Distribution};
 use rayon::prelude::*;
+use statrs::statistics::Statistics;
+
+pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: &Vec<usize>, contact_matrix: &Vec<Vec<f64>>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, prior_param: f64) 
+    -> Vec<f64> {
+
+    // define priors and random number generator
+    let exp_prior = Exp::new(prior_param).unwrap();
+    let uniform = Uniform::new(0., 1.).unwrap();
+    let rng = rand::thread_rng();
+    // define vector of taus 
+    let mut taus: Vec<f64> = vec![0.; iters+1];
+    taus[0] = tau_0;
+    // start point of adaptive mcmc
+    let n0 = 1_000;
+    // define variance in random pulls
+    let (mut mu, mut sigma, mut ll) = (0.1, 0.1, 0.);
+    let mut rng: ThreadRng = rand::thread_rng();
+    // iterate over mcmc chain length
+    for i in 1..(iters+1) {
+        if i % 1_000 == 0 {
+            println!("{i}");
+        }
+        // generate a new proposal for tau using optimal scaling result
+        let normal = Normal::new(taus[i-1], (2.38f64).powi(2)*sigma/3.);
+        let proposal = normal.unwrap().sample(&mut rng);
+        // new log likelihood
+        let ll_new = log_likelihood_incidence(&data, &days, n, partitions, network_params, outbreak_params, contact_matrix, dist_type, proposal, proportion_hosp);
+        // calculate the log acceptance ratio, including priors
+        let l_acc = ll_new - ll + exp_prior.ln_pdf(proposal) - exp_prior.ln_pdf(taus[i-1]);
+        // generate random number for acceptance criteria
+        if uniform.sample(&mut rng).ln() < l_acc {
+            // accept proposal
+            taus[i] = proposal;
+        }
+        else {
+            taus[i] = taus[i-1];
+        }
+        // the adaptive part, changing variance of pulls 
+        if i == n0 {
+            mu = taus.iter().take(i).mean();
+            sigma = taus.iter().take(i).variance() + 1e-6;
+        }
+        else if i > n0 {
+            let i_float = i as f64;
+            let mu_old = mu;
+            mu = (i_float*mu + taus[i])/(i_float + 1.);
+            sigma = sigma*(i_float-1.)/i_float + taus[i].powi(2) + i_float*mu_old.powi(2) - (i_float + 1.)*mu.powi(2) + 1e-6/i_float;
+        }
+    }
+    taus
+}
+
+fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partitions: &Vec<usize>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, contact_matrix: &Vec<Vec<f64>>, dist_type: &str, tau: f64, proportion_hosp: f64) -> f64 {
+
+    let mut ll = 0.;
+    if tau <= 0. {
+        let parameters = outbreak_params.iter().enumerate().map(|(i, &x)| {
+            if i == 0 {tau} else {x}
+        }).collect::<Vec<f64>>();
+        // simulate outbreak using tau value ten times 
+        let lls: Vec<f64> = vec![0; 10].par_iter()
+            .map(|_|{
+                let mut ll_tmp = 0.;
+                let (mut new_infections, mut hospitalisations) = (vec![0; days.last().unwrap().to_owned()], vec![0; days.last().unwrap().to_owned()]);
+                // create network
+                let network: NetworkStructure = if dist_type == "sbm" {
+                    NetworkStructure::new_sbm_from_vars(n, partitions, contact_matrix)
+                }
+                else {
+                    NetworkStructure::new_mult_from_input(n, partitions, dist_type, network_params, contact_matrix)
+                };
+                //  initialise infection and parameterize outbreak
+                let mut properties = NetworkProperties::new(&network, &parameters);
+                properties.initialize_infection_degree(&network, 1./(network.degrees.len() as f64), 5.);
+                let mut rng = rand::thread_rng();
+                let (mut takeoff, mut num_restarts) = (false, 0);
+                while takeoff == false {
+                    //simulate outbreak
+                    for i in 0..days.last().unwrap().to_owned() {
+                        new_infections[i] = step_tau_leap(&network, &mut properties, &mut rng, "");
+
+                        // cannot use poisson because data is not integer valued
+                        // let pois = Poisson::new(x);
+                        // ll += pois.unwrap().pmf(data[i].round() as u64).ln();
+                        let binomial = Binomial::new(new_infections[i] as u64, proportion_hosp);
+                        hospitalisations[i] = binomial.unwrap().sample(&mut rng);
+                    }
+                    // find number of hospitalisations a week and calculate likelihood
+                    for (i, &sample) in days.iter().enumerate() {
+                        let mut tmp_hosp = 0;
+                        for day in 0..sample {
+                            tmp_hosp += hospitalisations[day];
+                        }
+                        let normal = if tmp_hosp == 0 {
+                            Normal::new(tmp_hosp as f64, 1.).unwrap()
+                        }
+                        else {
+                            Normal::new(tmp_hosp as f64, tmp_hosp as f64).unwrap()
+                        };
+
+                        ll_tmp += normal.pdf(data[i]).ln();
+                    }
+                    // if outbreak doesn't take off  retry a max of 5 times
+                    if new_infections.iter().skip(days.last().unwrap()/2).sum::<usize>() == 0 {
+                        num_restarts += 1;
+                        if num_restarts < 5 {
+                            continue;
+                        }
+                    }
+                    takeoff = true;
+                }
+                ll_tmp
+            })
+            .collect::<Vec<f64>>();
+
+    }
+    else {
+        ll = - f64::INFINITY;
+    }
+    ll
+}
 
 
 pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected: f64, scaling: &str) -> 
@@ -33,7 +156,7 @@ pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &m
     //start simulation
     for _ in 0..maxtime {
         // step a day
-        step_tau_leap(network_structure, network_properties, &mut rng, scaling);
+        _ = step_tau_leap(network_structure, network_properties, &mut rng, scaling);
         // append all individual states to results at the end of the day
         individual_results.push(
             network_properties.nodal_states
@@ -110,7 +233,7 @@ fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkPr
                     // step a day
                     match cavity {
                         true => step_cavity(network_structure, &mut network_properties, &mut rng, day + 1),
-                        _ => step_tau_leap(network_structure, &mut network_properties, &mut rng, scaling)
+                        _ => _ = step_tau_leap(network_structure, &mut network_properties, &mut rng, scaling)
                     }
 
                     // check if there are any generation 3 people still infected
@@ -158,15 +281,18 @@ fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkPr
     r0s
 }
 
-fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, rng: &mut ThreadRng, scaling: &str) {
+fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, rng: &mut ThreadRng, scaling: &str) -> usize {
     // save next states to update infection simultaneously 
     let mut next_states: Vec<State> = vec![State::Susceptible; network_structure.degrees.len()];
+    let mut new_infections = 0;
     // indices to update generation number
     let mut gen_idx: Vec<(usize, usize)> = Vec::new();
     // define random number generators fro each period
-    let poisson_infectious_period = Poisson::new(network_properties.parameters[1]).unwrap();
+    // let poisson_infectious_period = Poisson::new(network_properties.parameters[1]).unwrap();
+    let geom_infectious_period = Geometric::new(1./network_properties.parameters[1]).unwrap();
     
     for (i, state) in network_properties.nodal_states.iter().enumerate() {
+
         match *state {
             State::Susceptible => (),
             State::Infected(days) => {
@@ -193,12 +319,13 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
                             };
                             if rng.gen::<f64>() < infection_prob {
                                 // make infected at next step
-                                next_states[link.1] = State::Infected(poisson_infectious_period.sample(rng).round() as usize);
+                                next_states[link.1] = State::Infected(geom_infectious_period.sample(rng).round() as usize);
                                 // add to secondary cases for infected individual
                                 network_properties.secondary_cases[i] += 1;
                                 network_properties.disease_from[link.1] = i;
                                 // update generation of target
                                 gen_idx.push((link.1, network_properties.generation[i]));
+                                new_infections += 1;
                             }
                         },
                         _ => ()
@@ -221,6 +348,8 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
         network_properties.generation[*i] = gen + 1
     }
     network_properties.nodal_states = next_states;
+
+    new_infections
 }
 
 // pub fn run_cavity(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected:f64) -> 

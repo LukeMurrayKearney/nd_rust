@@ -15,9 +15,9 @@ mod run_model;
 
 //  Creates a network from given variables
 #[pyfunction]
-fn network_from_vars(n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>) -> PyResult<Py<PyDict>>  {
+fn network_from_vars(n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>) -> PyResult<Py<PyDict>>  {
     
-    let network: network_structure::NetworkStructure = network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &params, &contact_matrix);
+    let network: network_structure::NetworkStructure = network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix);
     
     Python::with_gil(|py| {
         let dict = PyDict::new_bound(py);
@@ -50,10 +50,27 @@ fn sbm_from_vars(n: usize, partitions: Vec<usize>, contact_matrix: Vec<Vec<f64>>
 }
 
 
+///////////////////////////////////////// Fitting to Data (MCMC) ////////////////////////////////////////
+
+#[pyfunction]
+fn mcmc_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: Vec<usize>, contact_matrix: Vec<Vec<f64>>, network_params: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prior_param: f64) -> PyResult<Py<PyDict>> {
+
+    // call the mcmc function using our parameters
+    let taus = run_model::fit_to_hosp_data(data, days, tau_0, proportion_hosp, iters, dist_type, n, &partitions, &contact_matrix, &network_params, &outbreak_params, prior_param);
+    Python::with_gil(|py| {
+        let dict = PyDict::new_bound(py);
+        dict.set_item("taus", taus.to_object(py))?;
+        
+        return Ok(dict.into())
+    })
+}
+
+
+
 /////////////////////////////////////////////// R_0 fitting /////////////////////////////////////////////
 
 #[pyfunction]
-fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, parameters: Vec<f64>, prop_infec: f64, num_networks: usize, target_r0: f64, iters: usize, num_replays: usize, scaling: &str) -> PyResult<Py<PyDict>> {
+fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prop_infec: f64, num_networks: usize, target_r0: f64, iters: usize, num_replays: usize, scaling: &str) -> PyResult<Py<PyDict>> {
     
     let mut taus = Vec::new();
     for _ in 0..num_networks {
@@ -61,9 +78,9 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Ve
             "sbm" => {
                 network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
             },
-            _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &params, &contact_matrix)
+            _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
         };
-        let mut properties = network_properties::NetworkProperties::new(&network, &parameters);
+        let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
         taus.push(abc_r0(&network, &mut properties, prop_infec, target_r0, iters, num_replays, false, scaling));
     }
     Python::with_gil(|py| {
@@ -79,7 +96,7 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Ve
 
 
 #[pyfunction]
-fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &str, params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, parameters: Vec<f64>, maxtime: usize, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>>{
+fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, maxtime: usize, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>>{
     
     let mut infections: Vec<Vec<Vec<usize>>> = vec![vec![Vec::new()]; partitions.len()];
     let mut final_sizes: Vec<usize> = Vec::new();
@@ -94,9 +111,9 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
             "sbm" => {
                 network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
             },
-            _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &params, &contact_matrix)
+            _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
         };
-        let mut properties = network_properties::NetworkProperties::new(&network, &parameters);
+        let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
         let (individuals, seir, generation, secondary_cases, _) = run_model::run_tau_leap(&network, &mut properties, maxtime, prop_infec, scaling);
         // return final size of iteration
         peak_times.push(seir.iter().enumerate().max_by_key(|&(_, inner_vec)| inner_vec[2]).map(|(index, _)| index).unwrap());
@@ -146,7 +163,7 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
         dict.set_item("peak time", peak_times.to_object(py))?;
         dict.set_item("secondary cases by gen", secondary_cases_vec.to_object(py))?;
         dict.set_item("degrees by gen", degrees_vec.to_object(py))?;
-        dict.set_item("tau", parameters[0].to_object(py))?;
+        dict.set_item("tau", outbreak_params[0].to_object(py))?;
         
 
         // Convert dict to PyObject and return
@@ -164,11 +181,11 @@ pub fn fit_dpln(data: Vec<f64>, iters: usize, prior_params: Vec<f64>) -> PyResul
         let dict = PyDict::new_bound(py);
         // Attempt to run the optimization
         match dpln::fit_dpln(data, iters, prior_params) {
-            Ok(params) => {
-                dict.set_item("alpha", params.alpha.to_object(py))?;
-                dict.set_item("beta", params.beta.to_object(py))?;
-                dict.set_item("nu", params.nu.to_object(py))?;
-                dict.set_item("tau", params.tau.to_object(py))?;
+            Ok(network_params) => {
+                dict.set_item("alpha", network_params.alpha.to_object(py))?;
+                dict.set_item("beta", network_params.beta.to_object(py))?;
+                dict.set_item("nu", network_params.nu.to_object(py))?;
+                dict.set_item("tau", network_params.tau.to_object(py))?;
                 return Ok(dict.into());
             }, // If everything is okay, return Ok(())
             Err(ArgminError) => Err(PyErr::new::<pyo3::exceptions::PyRuntimeError, _>(
@@ -179,15 +196,15 @@ pub fn fit_dpln(data: Vec<f64>, iters: usize, prior_params: Vec<f64>) -> PyResul
 }
 
 #[pyfunction]
-pub fn dpln_sample(params: Vec<f64>, n: usize) -> Vec<f64> {
+pub fn dpln_sample(network_params: Vec<f64>, n: usize) -> Vec<f64> {
 
-    sample(params, n)
+    sample(network_params, n)
 }
 
 #[pyfunction]
-pub fn dpln_pdf(xs: Vec<f64>, params: Vec<f64>) -> Vec<f64> {
+pub fn dpln_pdf(xs: Vec<f64>, network_params: Vec<f64>) -> Vec<f64> {
 
-    pdf(xs, params)
+    pdf(xs, network_params)
 }
 
 /// A Python module implemented in Rust. The name of this function must match
@@ -197,6 +214,7 @@ pub fn dpln_pdf(xs: Vec<f64>, params: Vec<f64>) -> Vec<f64> {
 fn nd_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(network_from_vars, m)?)?;
     m.add_function(wrap_pyfunction!(sbm_from_vars, m)?)?;
+    m.add_function(wrap_pyfunction!(mcmc_data, m)?)?;
     m.add_function(wrap_pyfunction!(test_r0_fit, m)?)?;
     m.add_function(wrap_pyfunction!(infection_sims, m)?)?;
     m.add_function(wrap_pyfunction!(dpln_pdf, m)?)?;
