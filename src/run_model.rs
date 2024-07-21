@@ -35,6 +35,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
         let ll_new = log_likelihood_incidence(&data, &days, n, partitions, network_params, outbreak_params, contact_matrix, dist_type, proposal, proportion_hosp);
         // calculate the log acceptance ratio, including priors
         let l_acc = ll_new - ll + exp_prior.ln_pdf(proposal) - exp_prior.ln_pdf(taus[i-1]);
+        ll = ll_new;
         // generate random number for acceptance criteria
         if uniform.sample(&mut rng).ln() < l_acc {
             // accept proposal
