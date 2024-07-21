@@ -14,18 +14,18 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
     // define priors and random number generator
     let exp_prior = Exp::new(prior_param).unwrap();
     let uniform = Uniform::new(0., 1.).unwrap();
-    let rng = rand::thread_rng();
+    // let rng = rand::thread_rng();
     // define vector of taus 
     let mut taus: Vec<f64> = vec![0.; iters+1];
     taus[0] = tau_0;
     // start point of adaptive mcmc
     let n0 = 100;
     // define variance in random pulls
-    let (mut mu, mut sigma, mut ll) = (0.1, 0.1, 0.);
+    let (mut mu, mut sigma, mut ll) = (0., 0.1, 0.);
     let mut rng: ThreadRng = rand::thread_rng();
     // iterate over mcmc chain length
     for i in 1..(iters+1) {
-        if i % 1_000 == 0 {
+        if i % 10 == 0 {
             println!("{i}");
         }
         // generate a new proposal for tau using optimal scaling result
@@ -44,6 +44,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
         else {
             taus[i] = taus[i-1];
         }
+        // println!("tau: {}, \n\nproposal: {proposal}, \n\nll_new: {ll_new}, \n\nl_acc: {l_acc}, \n\nll: {ll}", taus[i-1]);
         // the adaptive part, changing variance of pulls 
         if i == n0 {
             mu = taus.iter().take(i).mean();
@@ -62,7 +63,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
 fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partitions: &Vec<usize>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, contact_matrix: &Vec<Vec<f64>>, dist_type: &str, tau: f64, proportion_hosp: f64) -> f64 {
 
     let mut ll = 0.;
-    if tau <= 0. {
+    if tau >= 0. {
         let parameters = outbreak_params.iter().enumerate().map(|(i, &x)| {
             if i == 0 {tau} else {x}
         }).collect::<Vec<f64>>();
@@ -121,7 +122,7 @@ fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partit
                 ll_tmp
             })
             .collect::<Vec<f64>>();
-
+        ll += lls.iter().mean();
     }
     else {
         ll = - f64::INFINITY;
