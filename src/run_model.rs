@@ -21,7 +21,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
     // start point of adaptive mcmc
     let n0 = 100;
     // define variance in random pulls
-    let (mut mu, mut sigma, mut ll) = (0., 0.1, 0.);
+    let (mut mu, mut sigma, mut ll) = (0., 0.002, 0.);
     let mut rng: ThreadRng = rand::thread_rng();
     // iterate over mcmc chain length
     for i in 1..(iters+1) {
