@@ -19,7 +19,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
     let mut taus: Vec<f64> = vec![0.; iters+1];
     taus[0] = tau_0;
     // start point of adaptive mcmc
-    let n0 = 1_000;
+    let n0 = 100;
     // define variance in random pulls
     let (mut mu, mut sigma, mut ll) = (0.1, 0.1, 0.);
     let mut rng: ThreadRng = rand::thread_rng();
