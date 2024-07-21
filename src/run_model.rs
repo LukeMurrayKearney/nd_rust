@@ -29,7 +29,15 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
             println!("{i}");
         }
         // generate a new proposal for tau using optimal scaling result
-        let normal = Normal::new(taus[i-1], (2.38f64).powi(2)*sigma/3.);
+        let normal = if sigma > 1e-8 {
+            Normal::new(taus[i-1], (2.38f64).powi(2)*sigma/3.)
+        }
+        else if sigma < 1e-8{
+            Normal::new(taus[i-1], -(2.38f64).powi(2)*sigma/3.)
+        }
+        else{
+            Normal::new(taus[i-1], 1e-8)
+        };
         let proposal = normal.unwrap().sample(&mut rng);
         // new log likelihood
         let ll_new = log_likelihood_incidence(&data, &days, n, partitions, network_params, outbreak_params, contact_matrix, dist_type, proposal, proportion_hosp);
