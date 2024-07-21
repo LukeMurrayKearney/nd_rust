@@ -13,6 +13,8 @@ models = ['sbm','nbinom','dpln']
 
 contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_poly.csv', delimiter=',')
 
+params = np.genfromtxt(f'input_data/parameters/params_poly_{model}.csv', delimiter=',')
+
 df_outbreak = pd.read_json('input_data/fit_sims/influenza_hospitalisations.json')
 
 data = [float(x) for x in df_outbreak['hospitalisations']]
@@ -20,8 +22,8 @@ data = [float(x) for x in df_outbreak['hospitalisations']]
 days = list(range(6,len(df_outbreak['hospitalisations'])*7,7))
 
 
-results = nd_p.mcmc(data=data, days=days, partitions=partitions, contact_matrix=contact_matrix,network_params=[], outbreak_params=[0.1,5], dist_type='sbm', iters=300)
+results = nd_p.mcmc(data=data, days=days, partitions=partitions, contact_matrix=contact_matrix,network_params=[], outbreak_params=[0.1,5], dist_type=models[0], iters=10_000)
 
-np.savetxt('../output_data/fit_to_data/sbm_mcmc_taus.csv', np.array(results['taus']), delimiter=',')
+np.savetxt(f'../output_data/fit_to_data/{models[0]}_mcmc_taus.csv', np.array(results['taus']), delimiter=',')
 
         
