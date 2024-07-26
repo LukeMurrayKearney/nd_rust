@@ -47,7 +47,7 @@ def fit_to_r0(partitions, contact_matrix, r0=3, network_params=None, iterations=
     partitions = [int(a) for a in partitions]
     if dist_type == 'sbm':
         network_params = []
-    return nd_r.test_r0_fit(n=n, partitions=partitions, dist_type=dist_type, params=network_params, contact_matrix=contact_matrix, parameters=outbreak_parameters, prop_infec=prop_infec, num_networks=num_networks, target_r0=r0, iters=iterations, num_replays=num_restarts, scaling=scaling)
+    return nd_r.test_r0_fit(n=n, partitions=partitions, dist_type=dist_type, network_params=network_params, contact_matrix=contact_matrix, parameters=outbreak_parameters, prop_infec=prop_infec, num_networks=num_networks, target_r0=r0, iters=iterations, num_replays=num_restarts, scaling=scaling)
 
 def simulate(partitions, contact_matrix, network_params=None, tau=0.05, iterations=50, n=30_000, dist_type='nbinom', maxtime=10_000, inv_gamma=4, prop_infec=1e-3, scaling="None"):
     ## Need to write some sensible code for this, depending on if we want to give params or a network
