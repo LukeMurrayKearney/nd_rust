@@ -10,7 +10,8 @@ partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.8
 
 data_names = ['comix1','comix2', 'poly']
 models = ['sbm','nbinom','dpln']
-scalings = ['log','sqrt','linear']
+# scalings = ['log','sqrt','linear']
+scalings = ['fit1']
 taus = []
 r0 = 3
 

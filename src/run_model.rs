@@ -8,8 +8,22 @@ use rand_distr::{uniform, Binomial, Distribution};
 use rayon::prelude::*;
 use statrs::statistics::Statistics;
 
+struct ScaleParams {
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
+}
+
+impl ScaleParams {
+    pub fn new(a: f64,b: f64, c: f64, d: f64, e: f64,) -> ScaleParams {
+        ScaleParams {a:a, b:b, c:c, d:d, e:e}
+    }
+}
+
 pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: &Vec<usize>, contact_matrix: &Vec<Vec<f64>>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, prior_param: f64) 
-    -> Vec<f64> {
+    -> (Vec<f64>, f64) {
 
     // define priors and random number generator
     let exp_prior = Exp::new(prior_param).unwrap();
@@ -18,14 +32,17 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
     // define vector of taus 
     let mut taus: Vec<f64> = vec![0.; iters+1];
     taus[0] = tau_0;
+    
     // start point of adaptive mcmc
-    let n0 = 100;
+    // let n0 = 100;
     // define variance in random pulls
-    let (mut mu, mut sigma, mut ll) = (0., 0.002, 0.);
+    // let (mut mu, mut sigma, mut ll) = (0., 0.002, 0.);
+    
+    let (sigma, mut ll, mut num_accept) = (0.001, 0., 0);
     let mut rng: ThreadRng = rand::thread_rng();
     // iterate over mcmc chain length
     for i in 1..(iters+1) {
-        if i % 10 == 0 {
+        if i % 100 == 0 {
             println!("{i}");
         }
         // generate a new proposal for tau using optimal scaling result
@@ -48,24 +65,28 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
         if uniform.sample(&mut rng).ln() < l_acc {
             // accept proposal
             taus[i] = proposal;
+            num_accept += 1;
         }
         else {
             taus[i] = taus[i-1];
         }
-        // println!("tau: {}, \n\nproposal: {proposal}, \n\nll_new: {ll_new}, \n\nl_acc: {l_acc}, \n\nll: {ll}", taus[i-1]);
-        // the adaptive part, changing variance of pulls 
-        if i == n0 {
-            mu = taus.iter().take(i).mean();
-            sigma = taus.iter().take(i).variance() + 1e-6;
-        }
-        else if i > n0 {
-            let i_float = i as f64;
-            let mu_old = mu;
-            mu = (i_float*mu + taus[i])/(i_float + 1.);
-            sigma = sigma*(i_float-1.)/i_float + taus[i].powi(2) + i_float*mu_old.powi(2) - (i_float + 1.)*mu.powi(2) + 1e-6/i_float;
-        }
+        /////////////// not going to use adaptive part
+        // // println!("tau: {}, \n\nproposal: {proposal}, \n\nll_new: {ll_new}, \n\nl_acc: {l_acc}, \n\nll: {ll}", taus[i-1]);
+        // // the adaptive part, changing variance of pulls 
+        // if i == n0 {
+        //     mu = taus.iter().take(i).mean();
+        //     sigma = taus.iter().take(i).variance() + 1e-6;
+        // }
+        // else if i > n0 {
+        //     let i_float = i as f64;
+        //     let mu_old = mu;
+        //     mu = (i_float*mu + taus[i])/(i_float + 1.);
+        //     sigma = sigma*(i_float-1.)/i_float + taus[i].powi(2) + i_float*mu_old.powi(2) - (i_float + 1.)*mu.powi(2) + 1e-6/i_float;
+        // }
+
+
     }
-    taus
+    (taus, (num_accept as f64)/(iters as f64))
 }
 
 fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partitions: &Vec<usize>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, contact_matrix: &Vec<Vec<f64>>, dist_type: &str, tau: f64, proportion_hosp: f64) -> f64 {
@@ -300,6 +321,16 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
     // define random number generators fro each period
     // let poisson_infectious_period = Poisson::new(network_properties.parameters[1]).unwrap();
     let geom_infectious_period = Geometric::new(1./network_properties.parameters[1]).unwrap();
+    // define parameters of fitted scaling
+    let scale_params = if scaling == "fit1" {
+        ScaleParams::new(1.92943985e-01, 2.59700437e-01,4.55889377e04,9.99839680e-01,-4.55800575e04)
+    }
+    else if scaling == "fit2" {
+        ScaleParams::new(5.93853399e-02,1.81040353e-01,  1.08985503e+05,  9.99930465e-01, -1.08976101e+05)
+    }
+    else {
+        ScaleParams::new(0., 0., 0., 0., 0.)
+    };
     
     for (i, state) in network_properties.nodal_states.iter().enumerate() {
 
@@ -325,6 +356,17 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
                                 "log" => network_properties.parameters[0] / (network_structure.degrees[i] as f64).ln(),
                                 "sqrt" => network_properties.parameters[0] / (network_structure.degrees[i] as f64).sqrt(),
                                 "linear" => network_properties.parameters[0] / (network_structure.degrees[i] as f64),
+                                // duration = A*(k^2)*exp(-Bk) + C/(k^D) + E/k 
+                                // max at 1, when k=1 we want f(k) = 1
+                                "fit1" => {
+                                    // use the k max on either side of link
+                                    let k = network_structure.degrees[i].max(network_structure.degrees[link.1]) as f64;
+                                    network_properties.parameters[0] * (scale_fit(&scale_params, k) / scale_fit(&scale_params, 1.))
+                                },
+                                "fit2" => {
+                                    let k = network_structure.degrees[i].max(network_structure.degrees[link.1]) as f64;
+                                    network_properties.parameters[0] * (scale_fit(&scale_params, k) / scale_fit(&scale_params, 1.))
+                                },
                                 _ => network_properties.parameters[0]
                             };
                             if rng.gen::<f64>() < infection_prob {
@@ -360,6 +402,10 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
     network_properties.nodal_states = next_states;
 
     new_infections
+}
+
+fn scale_fit(params: &ScaleParams, k: f64) -> f64 {
+    params.a*(-params.b*k).exp()*k.powi(2) + params.c/k.powf(params.d) + params.e/k
 }
 
 // pub fn run_cavity(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected:f64) -> 

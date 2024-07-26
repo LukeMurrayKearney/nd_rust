@@ -59,7 +59,8 @@ fn mcmc_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64,
     let taus = run_model::fit_to_hosp_data(data, days, tau_0, proportion_hosp, iters, dist_type, n, &partitions, &contact_matrix, &network_params, &outbreak_params, prior_param);
     Python::with_gil(|py| {
         let dict = PyDict::new_bound(py);
-        dict.set_item("taus", taus.to_object(py))?;
+        dict.set_item("taus", taus.0.to_object(py))?;
+        dict.set_item("acceptance_rate", taus.1.to_object(py))?;
         
         return Ok(dict.into())
     })
