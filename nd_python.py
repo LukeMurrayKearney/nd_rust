@@ -53,7 +53,7 @@ def simulate(partitions, contact_matrix, network_params=None, tau=0.05, iteratio
     ## Need to write some sensible code for this, depending on if we want to give params or a network
     partitions = [int(a) for a in partitions]
     parameters = [tau,inv_gamma]
-    return nd_r.infection_sims(iters=iterations, n=n, partitions=partitions, dist_type=dist_type, params=network_params, contact_matrix=contact_matrix, outbreak_params=parameters, maxtime=maxtime, prop_infec=prop_infec, scaling=scaling)
+    return nd_r.infection_sims(iters=iterations, n=n, partitions=partitions, dist_type=dist_type, network_params=network_params, contact_matrix=contact_matrix, outbreak_params=parameters, maxtime=maxtime, prop_infec=prop_infec, scaling=scaling)
     
 ################################################# utils ########################################################
 

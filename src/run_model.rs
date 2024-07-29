@@ -38,7 +38,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
     // define variance in random pulls
     // let (mut mu, mut sigma, mut ll) = (0., 0.002, 0.);
     
-    let (sigma, mut ll, mut num_accept) = (0.001, 0., 0);
+    let (sigma, mut ll, mut num_accept) = (0.003, 0., 0);
     let mut rng: ThreadRng = rand::thread_rng();
     // iterate over mcmc chain length
     for i in 1..(iters+1) {
@@ -353,7 +353,15 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
                         State::Susceptible => {
                             // check if infection is passed
                             let infection_prob = match scaling {
-                                "log" => network_properties.parameters[0] / (network_structure.degrees[i] as f64).ln(),
+                                "log" => {
+                                    let k = network_structure.degrees[i];
+                                    if k > 1 {
+                                        network_properties.parameters[0] / (k as f64).ln()
+                                    }
+                                    else {
+                                        network_properties.parameters[0]
+                                    }
+                                }
                                 "sqrt" => network_properties.parameters[0] / (network_structure.degrees[i] as f64).sqrt(),
                                 "linear" => network_properties.parameters[0] / (network_structure.degrees[i] as f64),
                                 // duration = A*(k^2)*exp(-Bk) + C/(k^D) + E/k 
