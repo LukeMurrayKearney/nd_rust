@@ -8,7 +8,7 @@ use rand_distr::{uniform, Binomial, Distribution};
 use rayon::prelude::*;
 use statrs::statistics::Statistics;
 
-struct ScaleParams {
+pub struct ScaleParams {
     pub a: f64,
     pub b: f64,
     pub c: f64,
@@ -22,7 +22,7 @@ impl ScaleParams {
     }
 }
 
-pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: &Vec<usize>, contact_matrix: &Vec<Vec<f64>>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, prior_param: f64) 
+pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: &Vec<usize>, contact_matrix: &Vec<Vec<f64>>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, prior_param: f64, scaling: &str) 
     -> (Vec<f64>, f64) {
 
     // define priors and random number generator
@@ -57,7 +57,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
         };
         let proposal = normal.unwrap().sample(&mut rng);
         // new log likelihood
-        let ll_new = log_likelihood_incidence(&data, &days, n, partitions, network_params, outbreak_params, contact_matrix, dist_type, proposal, proportion_hosp);
+        let ll_new = log_likelihood_incidence(&data, &days, n, partitions, network_params, outbreak_params, contact_matrix, dist_type, proposal, proportion_hosp, scaling);
         // calculate the log acceptance ratio, including priors
         let l_acc = ll_new - ll + exp_prior.ln_pdf(proposal) - exp_prior.ln_pdf(taus[i-1]);
         ll = ll_new;
@@ -89,7 +89,7 @@ pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion
     (taus, (num_accept as f64)/(iters as f64))
 }
 
-fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partitions: &Vec<usize>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, contact_matrix: &Vec<Vec<f64>>, dist_type: &str, tau: f64, proportion_hosp: f64) -> f64 {
+fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partitions: &Vec<usize>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, contact_matrix: &Vec<Vec<f64>>, dist_type: &str, tau: f64, proportion_hosp: f64, scaling: &str) -> f64 {
 
     let mut ll = 0.;
     if tau >= 0. && tau < 1. {
@@ -110,13 +110,13 @@ fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partit
                 };
                 //  initialise infection and parameterize outbreak
                 let mut properties = NetworkProperties::new(&network, &parameters);
-                properties.initialize_infection_degree(&network, 1./(network.degrees.len() as f64), 5.);
+                properties.initialize_infection_degree(&network, 1./(network.degrees.len() as f64), 5., scaling);
                 let mut rng = rand::thread_rng();
                 let (mut takeoff, mut num_restarts) = (false, 0);
                 while takeoff == false {
                     //simulate outbreak
                     for i in 0..days.last().unwrap().to_owned() {
-                        new_infections[i] = step_tau_leap(&network, &mut properties, &mut rng, "");
+                        new_infections[i] = step_tau_leap(&network, &mut properties, &mut rng, scaling);
 
                         // cannot use poisson because data is not integer valued
                         // let pois = Poisson::new(x);
@@ -161,10 +161,10 @@ fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partit
 
 
 pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected: f64, scaling: &str) -> 
-    (Vec<Vec<usize>>, Vec<Vec<usize>>, Vec<usize>, Vec<usize>, Vec<usize>)  {
+    (Vec<Vec<usize>>, Vec<Vec<usize>>, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>)  {
 
     // infect a proportion of the population
-    network_properties.initialize_infection_degree(network_structure, initially_infected, network_properties.parameters[1]);
+    network_properties.initialize_infection_degree(network_structure, initially_infected, network_properties.parameters[1], scaling);
     let mut rng: ThreadRng = rand::thread_rng();
     // create vector to store results
     let mut individual_results: Vec<Vec<usize>> = Vec::new(); 
@@ -183,11 +183,12 @@ pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &m
     // summary results
     let mut seir_results: Vec<Vec<usize>> = Vec::new();
     seir_results.push(network_properties.count_states());
+    let mut new_cases = Vec::new();
 
     //start simulation
     for _ in 0..maxtime {
         // step a day
-        _ = step_tau_leap(network_structure, network_properties, &mut rng, scaling);
+        new_cases.push(step_tau_leap(network_structure, network_properties, &mut rng, scaling));
         // append all individual states to results at the end of the day
         individual_results.push(
             network_properties.nodal_states
@@ -208,7 +209,7 @@ pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &m
             break;
         }
     }
-    (individual_results, seir_results, network_properties.generation.clone(), network_properties.secondary_cases.clone(), network_properties.disease_from.clone())
+    (individual_results, seir_results, network_properties.generation.clone(), network_properties.secondary_cases.clone(), network_properties.disease_from.clone(), new_cases)
 }
 
 
@@ -257,7 +258,7 @@ fn r0_from_taus(network_structure: &NetworkStructure, properties: &mut NetworkPr
                 let mut network_properties = properties.clone();
                 network_properties.parameters[0] = tau;
                 // infect a proportion of the population
-                network_properties.initialize_infection_degree(network_structure, initially_infected, network_properties.parameters[1]);
+                network_properties.initialize_infection_degree(network_structure, initially_infected, network_properties.parameters[1], scaling);
                 let mut secondary_cases: Vec<usize> = Vec::new();
                 //start simulation
                 for day in 0..10_000 {
@@ -412,7 +413,7 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
     new_infections
 }
 
-fn scale_fit(params: &ScaleParams, k: f64) -> f64 {
+pub fn scale_fit(params: &ScaleParams, k: f64) -> f64 {
     params.a*(-params.b*k).exp()*k.powi(2) + params.c/k.powf(params.d) + params.e/k
 }
 

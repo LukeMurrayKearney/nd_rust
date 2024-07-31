@@ -1,7 +1,8 @@
 use crate::network_structure::NetworkStructure;
+use crate::run_model::{scale_fit, ScaleParams};
 use rand::distributions::WeightedIndex;
 use statrs::distribution::Poisson;
-use rand_distr::Distribution;
+use rand_distr::{Distribution, Geometric};
 
 #[derive(Clone, Debug)]
 pub struct NetworkProperties {
@@ -31,7 +32,7 @@ impl NetworkProperties {
         }
     }
 
-    pub fn initialize_infection_degree(&mut self, network: &NetworkStructure, proportion_of_population: f64, inv_gamma: f64) {
+    pub fn initialize_infection_degree(&mut self, network: &NetworkStructure, proportion_of_population: f64, inv_gamma: f64, scaling: &str) {
 
         let number_of_infecteds: usize = match proportion_of_population as usize {
             0..=1 => {
@@ -44,12 +45,36 @@ impl NetworkProperties {
         };
 
         // define infectious period sampler
-        let poisson_infectious_period = Poisson::new(inv_gamma).unwrap();
+        // let poisson_infectious_period = Poisson::new(inv_gamma).unwrap();
+        let geom_infectious_period = Geometric::new(1./inv_gamma).unwrap();
+
         // define random number generator
         let mut rng = rand::thread_rng();
+
         
         //we want a weighted sampling of the population
-        let probabilities: Vec<f64> = network.degrees.iter().map(|&degrees| ((degrees + 1) as f64).ln()).collect();
+        let probabilities: Vec<f64> = match scaling {
+            "log" => {
+                network.degrees.iter().map(|&degrees| ((degrees + 1) as f64).ln()).collect()
+            },
+            "sqrt" => {
+                network.degrees.iter().map(|&degrees| ((degrees + 1) as f64).sqrt()).collect()
+            },
+            "linear" => {
+                network.degrees.iter().map(|&degrees| ((degrees + 1) as f64)).collect()
+            },
+            // duration = A*(k^2)*exp(-Bk) + C/(k^D) + E/k 
+            // max at 1, when k=1 we want f(k) = 1
+            "fit1" => {
+                let scale_params = ScaleParams::new(1.92943985e-01, 2.59700437e-01,4.55889377e04,9.99839680e-01,-4.55800575e04);
+                network.degrees.iter().map(|&degrees| 1./scale_fit(&scale_params, degrees as f64)).collect()
+            },
+            "fit2" => {
+                let scale_params = ScaleParams::new(5.93853399e-02,1.81040353e-01,  1.08985503e+05,  9.99930465e-01, -1.08976101e+05);
+                network.degrees.iter().map(|&degrees| 1./scale_fit(&scale_params, degrees as f64)).collect()
+            },
+            _ => network.degrees.iter().map(|&degrees| ((degrees + 1) as f64)).collect()
+        };
 
         // weighted index of each individual
         let dist = WeightedIndex::new(probabilities).unwrap();
@@ -57,7 +82,8 @@ impl NetworkProperties {
 
         // infect selected individuals
         for &i in selected.iter() {
-            self.nodal_states[i] = State::Infected(poisson_infectious_period.sample(&mut rng).round() as usize);
+            self.nodal_states[i] = State::Infected(geom_infectious_period.sample(&mut rng) as usize);
+            // self.nodal_states[i] = State::Infected(poisson_infectious_period.sample(&mut rng).round() as usize);
             self.generation[i] = 1;
         }
     }

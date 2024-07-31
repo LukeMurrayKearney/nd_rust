@@ -53,10 +53,10 @@ fn sbm_from_vars(n: usize, partitions: Vec<usize>, contact_matrix: Vec<Vec<f64>>
 ///////////////////////////////////////// Fitting to Data (MCMC) ////////////////////////////////////////
 
 #[pyfunction]
-fn mcmc_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: Vec<usize>, contact_matrix: Vec<Vec<f64>>, network_params: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prior_param: f64) -> PyResult<Py<PyDict>> {
+fn mcmc_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: Vec<usize>, contact_matrix: Vec<Vec<f64>>, network_params: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prior_param: f64, scaling: &str) -> PyResult<Py<PyDict>> {
 
     // call the mcmc function using our parameters
-    let taus = run_model::fit_to_hosp_data(data, days, tau_0, proportion_hosp, iters, dist_type, n, &partitions, &contact_matrix, &network_params, &outbreak_params, prior_param);
+    let taus = run_model::fit_to_hosp_data(data, days, tau_0, proportion_hosp, iters, dist_type, n, &partitions, &contact_matrix, &network_params, &outbreak_params, prior_param, scaling);
     Python::with_gil(|py| {
         let dict = PyDict::new_bound(py);
         dict.set_item("taus", taus.0.to_object(py))?;
@@ -106,6 +106,7 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
     let mut secondary_cases_vec: Vec<Vec<Vec<usize>>> = vec![vec![Vec::new()]];
     // same as secondary cases for degrees
     let mut degrees_vec: Vec<Vec<Vec<usize>>> = vec![vec![Vec::new()]];
+    let mut new_cases: Vec<Vec<usize>> = Vec::new();
 
     for _ in 0..iters {
         let network: network_structure::NetworkStructure = match dist_type { 
@@ -115,10 +116,11 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
             _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
         };
         let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
-        let (individuals, seir, generation, secondary_cases, _) = run_model::run_tau_leap(&network, &mut properties, maxtime, prop_infec, scaling);
+        let (individuals, seir, generation, secondary_cases, _, new) = run_model::run_tau_leap(&network, &mut properties, maxtime, prop_infec, scaling);
         // return final size of iteration
         peak_times.push(seir.iter().enumerate().max_by_key(|&(_, inner_vec)| inner_vec[2]).map(|(index, _)| index).unwrap());
         final_sizes.push(*seir.last().unwrap().last().unwrap());
+        new_cases.push(new);
         // get secondary cases and degrees in each generation
         let final_gen = *generation.iter().max().unwrap();
         for g in 0..final_gen {
@@ -160,6 +162,7 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
         
         // Insert vectors into the results dictionary
         dict.set_item("infections", infections.to_object(py))?;
+        dict.set_item("new_cases", new_cases.to_object(py))?;
         dict.set_item("final sizes", final_sizes.to_object(py))?;
         dict.set_item("peak time", peak_times.to_object(py))?;
         dict.set_item("secondary cases by gen", secondary_cases_vec.to_object(py))?;
