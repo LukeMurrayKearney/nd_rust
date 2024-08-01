@@ -89,9 +89,8 @@ impl NetworkProperties {
             },
             _ => network.degrees.iter().map(|&degrees| ((degrees + 1) as f64)).collect()
         };
-        
+
         // weighted index of each individual
-        println!("{:?}", probabilities.iter().enumerate().filter(|(_, &x)| !(x>0.)).map(|(i, _)| network.degrees[i]).collect::<Vec<usize>>());
         let dist = WeightedIndex::new(probabilities).unwrap();
         let selected: Vec<usize> = (0..number_of_infecteds).map(|_| dist.sample(&mut rng)).collect();
 
