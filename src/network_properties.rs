@@ -67,16 +67,31 @@ impl NetworkProperties {
             // max at 1, when k=1 we want f(k) = 1
             "fit1" => {
                 let scale_params = ScaleParams::new(1.92943985e-01, 2.59700437e-01,4.55889377e04,9.99839680e-01,-4.55800575e04);
-                network.degrees.iter().map(|&degrees| 1./scale_fit(&scale_params, degrees as f64)).collect()
+                network.degrees.iter().map(|&degrees| {
+                    if degrees == 0 {
+                        0.
+                    }
+                    else {
+                        1./scale_fit(&scale_params, degrees as f64)
+                    }
+                }).collect()
             },
             "fit2" => {
                 let scale_params = ScaleParams::new(5.93853399e-02,1.81040353e-01,  1.08985503e+05,  9.99930465e-01, -1.08976101e+05);
-                network.degrees.iter().map(|&degrees| 1./scale_fit(&scale_params, degrees as f64)).collect()
+                network.degrees.iter().map(|&degrees| {
+                    if degrees == 0 {
+                        0.
+                    }
+                    else {
+                        1./scale_fit(&scale_params, degrees as f64)
+                    }
+                }).collect()
             },
             _ => network.degrees.iter().map(|&degrees| ((degrees + 1) as f64)).collect()
         };
-
+        
         // weighted index of each individual
+        println!("{:?}", probabilities.iter().enumerate().filter(|(_, &x)| !(x>0.)).map(|(i, _)| network.degrees[i]).collect::<Vec<usize>>());
         let dist = WeightedIndex::new(probabilities).unwrap();
         let selected: Vec<usize> = (0..number_of_infecteds).map(|_| dist.sample(&mut rng)).collect();
 
