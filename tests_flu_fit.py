@@ -25,6 +25,6 @@ days = list(range(6,len(df_outbreak['hospitalisations'])*7,7))
 results = nd_p.mcmc(data=data, days=days, partitions=partitions, contact_matrix=contact_matrix,network_params=params, outbreak_params=[0.05,5], dist_type=models[0], iters=1_000, prior_param=50, n=n)
 
 # np.savetxt(f'../output_data/fit_to_data/{models[0]}_mcmc_taus.csv', np.array(results['taus']), delimiter=',')
-with open('../output_data/fit_to_data/mcmc_test_output2.json', 'w') as file:
+with open(f'../output_data/fit_to_data/mcmc_{models[0]}.json', 'w') as file:
     json.dump(results, file, indent=4)
         
