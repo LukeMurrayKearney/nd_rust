@@ -36,15 +36,15 @@ for scale in scalings:
             if data == "comix2":
                 taus.append(result['tau'])
 
-    data = data_names[0]
-    for i, model in enumerate(models):
-        print(f'{data}: {model}', flush=True)
-        contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
-        if model == 'sbm':
-            params = []
-        else:
-            params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-        infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=taus[i], iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-        # save outputs
-        with open(f'../output_data/simulations/sims_compare_{r0}_{data}_{model}_{scale}.json', 'w') as file:
-            json.dump(infections, file)
+    # data = data_names[0]
+    # for i, model in enumerate(models):
+    #     print(f'{data}: {model}', flush=True)
+    #     contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
+    #     if model == 'sbm':
+    #         params = []
+    #     else:
+    #         params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
+    #     infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=taus[i], iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
+    #     # save outputs
+    #     with open(f'../output_data/simulations/sims_compare_{r0}_{data}_{model}_{scale}.json', 'w') as file:
+    #         json.dump(infections, file)
