@@ -271,7 +271,8 @@ def log_bins(x, num_bins=5):
     Input: Contacts -> np array, num_bins -> int
     Output: Geometric center of bins -> ndarray, values in bins -> ndarray
     """
-    count_zeros = np.sum(x[x==0])
+    # count_zeros = np.sum(x[x==0])
+    count_zeros = len(x[x==0])
     x = np.sort([a for a in x if a > 0])
     max1, min1 = np.log(np.ceil(max(x))), np.log(np.floor(min(x)))
     x = np.log(x)
