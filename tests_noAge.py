@@ -24,7 +24,7 @@ for scale in scalings:
         #get mean contacts
         contact_matrix = sum([sum(row)*old_partitions[i] for i, row in enumerate(contact_matrix)])/n
         #read in data and fit 
-        _, check, params = nd_p.fit_to_data(nd_p.read_in_dataframe(f'input_data/{data}.csv'), dist_type=model,buckets=buckets,save_fig=True,log=True)
+        _, check, params = nd_p.fit_to_data(nd_p.read_in_dataframe(f'input_data/{data}.csv'), dist_type=model,buckets=buckets,save_fig=False,log=False)
         print(check, contact_matrix)
         
         # find suitable tau for r0
