@@ -1,6 +1,7 @@
 import nd_rust as nd_r
 import nd_python as nd_p 
 import numpy as np
+import pandas as pd
 import json
 
 n, iters = 100_000, 100
@@ -14,12 +15,18 @@ scalings = ['none','fit1']
 
 r0 = 3
 
+
 for scale in scalings:
     for data in data_names:
         print(f'{scale} {data}')
         contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
-        params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-
+        old_partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.866*n, n]
+        #get mean contacts
+        contact_matrix = sum([sum(row)*old_partitions[i] for i, row in enumerate(contact_matrix)])/n
+        #read in data and fit 
+        _, check, params = nd_p.fit_to_data(nd_p.read_in_dataframe(f'{data}.csv'), dist_type=model,buckets=buckets,save_fig=True,log=True)
+        print(check, contact_matrix)
+        
         # find suitable tau for r0
         result = nd_p.fit_to_r0(partitions=partitions, network_params=params, contact_matrix=contact_matrix, iterations=iters, n=n, prop_infec=10/n, r0=r0, dist_type=model, scaling=scale)
         # simulate outbreaks with r0

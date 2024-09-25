@@ -14,7 +14,7 @@ def mcmc(data, days, partitions, contact_matrix, network_params, outbreak_params
     partitions = [int(a) for a in partitions]
     return nd_r.mcmc_data(data=data, days=days, tau_0=tau_0, proportion_hosp=p_hosp, iters=iters, dist_type=dist_type, n=n, partitions=partitions, contact_matrix=contact_matrix, network_params=network_params, outbreak_params=outbreak_params, prior_param=prior_param,scaling=scaling)
 
-def fit_to_data(df = None, input_file_path = 'input_data/polymod_df.csv', dist_type = "nbinom", buckets = np.array([5,12,18,30,40,50,60,70]), save_fig = True, output_file_path=None, log=False, to_csv=False, fig_data_file='',num_bins=15):
+def fit_to_data(df = None, input_file_path = 'input_data/poly.csv', dist_type = "nbinom", buckets = np.array([5,12,18,30,40,50,60,70]), save_fig = True, output_file_path=None, log=False, to_csv=False, fig_data_file='',num_bins=15):
 
     # Call the function with the provided arguments
     if df is None:
