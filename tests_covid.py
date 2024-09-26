@@ -10,7 +10,7 @@ partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.8
 
 data1, data2 = 'comix1', 'comix2'
 model ='dpln'
-scale = 'fit1'
+scale1, scale2 = 'fit1', 'fit2'
 
 #taken from 2 week delay of SPI-M-0 data
 r0 = 1.04167
@@ -20,9 +20,9 @@ contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{dat
 params = np.genfromtxt(f'input_data/parameters/params_{data1}_{model}.csv', delimiter=',')
 
 # find suitable tau for r0
-result = nd_p.fit_to_r0(partitions=partitions, network_params=params, contact_matrix=contact_matrix, iterations=iters, n=n, prop_infec=10/n, r0=r0, dist_type=model, scaling=scale, num_networks=100,num_restarts=100)
+result = nd_p.fit_to_r0(partitions=partitions, network_params=params, contact_matrix=contact_matrix, iterations=iters, n=n, prop_infec=10/n, r0=r0, dist_type=model, scaling=scale1, num_networks=100,num_restarts=100)
 # simulate outbreaks with r0
-infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=result['tau'], iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
+infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=result['tau'], iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale1)
 # save outputs
 with open(f'../output_data/simulations/covid/{data1}.json', 'w') as file:
     json.dump(infections, file)
@@ -32,7 +32,7 @@ tau = result['tau']
 print('CoMix2')
 contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data2}.csv', delimiter=',')
 params = np.genfromtxt(f'input_data/parameters/params_{data2}_{model}.csv', delimiter=',')
-infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=tau, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
+infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=tau, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale2)
 # save outputs
 with open(f'../output_data/simulations/covid/{data2}.json', 'w') as file:
     json.dump(infections, file)
