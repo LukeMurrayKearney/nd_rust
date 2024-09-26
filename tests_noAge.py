@@ -6,7 +6,7 @@ import json
 
 n, iters = 100_000, 100
 
-buckets = np.array([120])
+buckets = np.array([])
 partitions = [n]
 
 data_names = ['comix1','comix2', 'poly']
