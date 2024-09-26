@@ -3,7 +3,7 @@ import nd_python as nd_p
 import numpy as np
 import json
 
-n, iters = 100_000, 100
+n, iters = 100_000, 1_000
 
 buckets = np.array([5,12,18,30,40,50,60,70])
 partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.866*n, n]
@@ -20,7 +20,7 @@ contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{dat
 params = np.genfromtxt(f'input_data/parameters/params_{data1}_{model}.csv', delimiter=',')
 
 # find suitable tau for r0
-result = nd_p.fit_to_r0(partitions=partitions, network_params=params, contact_matrix=contact_matrix, iterations=iters, n=n, prop_infec=10/n, r0=r0, dist_type=model, scaling=scale)
+result = nd_p.fit_to_r0(partitions=partitions, network_params=params, contact_matrix=contact_matrix, iterations=iters, n=n, prop_infec=10/n, r0=r0, dist_type=model, scaling=scale, num_networks=100,num_restarts=100)
 # simulate outbreaks with r0
 infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=result['tau'], iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
 # save outputs
