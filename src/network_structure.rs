@@ -31,6 +31,7 @@ impl NetworkStructure {
                 pair[1] - pair[0]
             })
             .collect();
+        
         group_sizes.insert(0,partitions[0]);
         // transform contact matrix to a matrix of probabilities
         let probs: Vec<Vec<f64>> = rates_to_row_probabilities(contact_matrix.clone());
@@ -104,6 +105,8 @@ impl NetworkStructure {
 
         let num_groups: usize = partitions.len();
         for i in 0..num_groups {
+            // don't try to connect neighbours if there is less than 3 age groups 
+            if num_groups < 3 {continue}
             for j in 0..num_groups {
                 let mut old_edge_list: Vec<(usize, usize)> = Vec::new();
                 for index in parts_iterable[i]..parts_iterable[i+1] {

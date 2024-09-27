@@ -159,6 +159,37 @@ fn log_likelihood_incidence(data: &Vec<f64>, days: &Vec<usize>, n: usize, partit
     ll
 }
 
+pub fn quick_run(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected: f64, scaling: &str) ->
+    (usize, usize, f64) {
+
+    // infect a proportion of the population
+    network_properties.initialize_infection_degree(network_structure, initially_infected, network_properties.parameters[1], scaling);
+    let mut rng: ThreadRng = rand::thread_rng();
+    let mut seir_results: Vec<Vec<usize>> = Vec::new();
+    seir_results.push(network_properties.count_states());
+    let mut new_cases = Vec::new();
+
+    //start simulation
+    for _ in 0..maxtime {
+        // step a day
+        new_cases.push(step_tau_leap(network_structure, network_properties, &mut rng, scaling));
+        // collect summary days summer stats
+        seir_results.push(network_properties.count_states());
+        // check if there is infetion in the population
+        if seir_results.last().unwrap()[1] == 0 {
+            break;
+        }
+    }
+    // calc r0
+    let gen23: Vec<usize> = network_properties.generation
+        .iter()
+        .enumerate()
+        .filter(|(_, &x)| x == 2 || x == 3)
+        .map(|(i, _)| i)
+        .collect();
+    let r0 = if gen23.len() == 0 {-1.} else {(gen23.iter().sum::<usize>() as f64) / (gen23.len() as f64)};
+    (seir_results.last().unwrap()[2], seir_results.iter().map(|row| row[1]).max().unwrap(), r0)
+}
 
 pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected: f64, scaling: &str) -> 
     (Vec<Vec<usize>>, Vec<Vec<usize>>, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>)  {

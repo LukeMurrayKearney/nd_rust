@@ -97,6 +97,44 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, network_params
 
 
 #[pyfunction]
+fn big_sims(taus:Vec<f64>, iters: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, maxtime: usize, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
+
+    let mut final_sizes: Vec<Vec<usize>> = vec![vec![0; iters]; taus.len()];
+    let mut peak_sizes: Vec<Vec<usize>> = vec![vec![0; iters]; taus.len()];
+    let mut r0s: Vec<Vec<f64>> = vec![vec![0.; iters]; taus.len()];
+
+    for (i, tau) in taus.iter().enumerate() {
+        for j in 0..iters {
+            let network: network_structure::NetworkStructure = match dist_type { 
+                "sbm" => {
+                    network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
+                },
+                _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
+            };
+            let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
+            properties.parameters[0] = *tau;
+            let (fs, ps, r0) = run_model::quick_run(&network, &mut properties.clone(), maxtime, prop_infec, scaling);
+            final_sizes[i][j] = fs; peak_sizes[i][j] = ps; r0s[i][j] = r0;
+        }    
+    }
+
+    // Initialize the Python interpreter
+    Python::with_gil(|py| {
+        // Create output PyDict
+        let dict = PyDict::new_bound(py);
+        
+        dict.set_item("final sizes", final_sizes.to_object(py))?;
+        dict.set_item("peak time", peak_sizes.to_object(py))?;
+        dict.set_item("r0", r0s.to_object(py))?;
+        
+
+        // Convert dict to PyObject and return
+        Ok(dict.into())
+    })
+}
+
+
+#[pyfunction]
 fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, maxtime: usize, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>>{
     
     let mut infections: Vec<Vec<Vec<usize>>> = vec![vec![Vec::new()]; partitions.len()];
@@ -220,6 +258,7 @@ fn nd_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sbm_from_vars, m)?)?;
     m.add_function(wrap_pyfunction!(mcmc_data, m)?)?;
     m.add_function(wrap_pyfunction!(test_r0_fit, m)?)?;
+    m.add_function(wrap_pyfunction!(big_sims, m)?)?;
     m.add_function(wrap_pyfunction!(infection_sims, m)?)?;
     m.add_function(wrap_pyfunction!(dpln_pdf, m)?)?;
     m.add_function(wrap_pyfunction!(dpln_sample, m)?)?;
