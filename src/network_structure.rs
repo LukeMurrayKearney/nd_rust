@@ -39,7 +39,7 @@ impl NetworkStructure {
         let probs: Vec<Vec<f64>> = rates_to_row_probabilities(contact_matrix.clone());
         // sample degrees from age degrees distributions
         let mut degrees = degrees_from_params(&partitions, &group_sizes, dist_type, &params, &mut rng);
-        println!("{:?}", (degrees.iter().sum::<usize>() as f64)/(degrees.len() as f64));
+        // println!("{:?}", (degrees.iter().sum::<usize>() as f64)/(degrees.len() as f64));
         // assigning all stubs to age groups
         let mut start: usize = 0;
         let mut degree_age_breakdown: Vec<Vec<usize>> = Vec::new();
