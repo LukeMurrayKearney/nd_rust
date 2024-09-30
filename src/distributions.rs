@@ -108,7 +108,7 @@ pub fn rates_to_probabilities(rates_mat: Vec<Vec<f64>>, partitions: &Vec<usize>)
         .iter()
         .enumerate()
         .map(|(i, row)| {
-            row.iter().map(|rate| {
+            row.iter().enumerate().map(|(_, rate)| {
                 rate / (group_sizes[i] as f64)
             })
             .collect()

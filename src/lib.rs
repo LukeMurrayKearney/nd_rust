@@ -1,6 +1,7 @@
 use distributions::median;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
+use rayon::{prelude::*, result, vec};
 use crate::dpln::{pdf, sample};
 use crate::run_model::abc_r0;
 
@@ -103,20 +104,47 @@ fn big_sims(taus:Vec<f64>, iters: usize, n: usize, partitions: Vec<usize>, dist_
     let mut peak_sizes: Vec<Vec<usize>> = vec![vec![0; iters]; taus.len()];
     let mut r0s: Vec<Vec<f64>> = vec![vec![0.; iters]; taus.len()];
 
-    for (i, tau) in taus.iter().enumerate() {
-        for j in 0..iters {
-            let network: network_structure::NetworkStructure = match dist_type { 
-                "sbm" => {
-                    network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
-                },
-                _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
-            };
-            let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
-            properties.parameters[0] = *tau;
-            let (fs, ps, r0) = run_model::quick_run(&network, &mut properties.clone(), maxtime, prop_infec, scaling);
-            final_sizes[i][j] = fs; peak_sizes[i][j] = ps; r0s[i][j] = r0;
-        }    
+    // parallel simulations
+    let results: Vec<Vec<(usize,usize,f64)>> = taus.par_iter()
+        .map(|tau|{
+            let tmp: Vec<(usize,usize,f64)> = vec![(0,0,0.); iters];
+            tmp.iter()
+                .map(|_|{
+                    let network: network_structure::NetworkStructure = match dist_type { 
+                        "sbm" => {
+                            network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
+                        },
+                        _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
+                    };
+                    let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
+                    properties.parameters[0] = *tau;
+                    let (fs, ps, r0) = run_model::quick_run(&network, &mut properties.clone(), maxtime, prop_infec, scaling);
+                    (fs, ps, r0)
+                })
+            .collect::<Vec<(usize,usize,f64)>>()
+        })
+        .collect();
+    
+    for (i, tau) in results.iter().enumerate() {
+        for (j, res) in tau.iter().enumerate() {
+            final_sizes[i][j] = res.0; peak_sizes[i][j] = res.1; r0s[i][j] = res.2;
+        }
     }
+
+    // for (i, tau) in taus.iter().enumerate() {
+    //     for j in 0..iters {
+    //         let network: network_structure::NetworkStructure = match dist_type { 
+    //             "sbm" => {
+    //                 network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
+    //             },
+    //             _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
+    //         };
+    //         let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
+    //         properties.parameters[0] = *tau;
+    //         let (fs, ps, r0) = run_model::quick_run(&network, &mut properties.clone(), maxtime, prop_infec, scaling);
+    //         final_sizes[i][j] = fs; peak_sizes[i][j] = ps; r0s[i][j] = r0;
+    //     }    
+    // }
 
     // Initialize the Python interpreter
     Python::with_gil(|py| {

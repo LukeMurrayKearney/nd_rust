@@ -2,6 +2,7 @@ import nd_rust as nd_r
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import networkx as nx
 import math
 import itertools
 import json
@@ -20,11 +21,12 @@ def fit_to_data(df = None, input_file_path = 'input_data/poly.csv', dist_type = 
     if df is None:
         df = read_in_dataframe(input_file_path)
     
-    # Create Contact Matrices
-    contact_matrix, num_per_bucket = make_contact_matrices(df=df, buckets=buckets)
-    
     # Create list of ego networks from data
     egos = make_egos_list(df=df, buckets=buckets)
+    
+    # Create Contact Matrices
+    contact_matrix, num_per_bucket = make_contact_matrices(egos=egos, buckets=buckets)
+    
     # fit to the ego networks for each age bracket
     params = fit_dist(egos, dist_type, buckets, num_per_bucket, save_fig=save_fig, file_path=output_file_path, log=log,to_csv=to_csv,fig_data_file=fig_data_file,num_bins=num_bins)
 
@@ -40,6 +42,15 @@ def build_network(n, partitions, contact_matrix, params=None, dist_type ="nbinom
             print("Parameters are required")
         network = nd_r.network_from_vars(n, partitions, dist_type, params, contact_matrix)
     return network
+
+def to_networkx(network={}):
+    G = nx.Graph()
+    G.add_nodes_from(range(len(network['ages'])))
+    nx.set_node_attributes(G,network['ages'], 'age')
+    for person in network['adjacency_matrix']:
+        for link in person:
+            G.add_edge(link[0], link[1])
+    return G    
 
 def fit_to_r0(partitions, contact_matrix, r0=3, network_params=None, iterations=30, n=30_000, dist_type='nbinom', inv_gamma=4, prop_infec=1e-3, num_networks=30, num_restarts=30, scaling="None"):
     
@@ -79,26 +90,35 @@ def get_bucket_index(num, buckets):
             return i
     return len(buckets)  # If the number exceeds the last bucket, put it in the last bucket
 
-
-def make_contact_matrices(df, buckets):
+def make_contact_matrices(egos,buckets):
     num_per_bucket = np.zeros(len(buckets)+1)
     contact_matrix = np.zeros((len(buckets)+1, len(buckets)+1))
-    # save last participant id
-    last_id = ''
-    # Iterate through the DataFrame and update the count_matrix
-    for _, row in df.iterrows():
-        b_i = get_bucket_index(row['part_age'], buckets=buckets)
-        if last_id != row['part_id']:
-            # count new participants
-            num_per_bucket[b_i] += 1
-        if pd.isnull(row['cont_id']) or pd.isnull(row['cnt_age_exact']):
-            continue
-        b_j = get_bucket_index(row['cnt_age_exact'], buckets=buckets)
-        contact_matrix[b_i, b_j] += 1
-        contact_matrix[b_j, b_i] += 1
-        last_id = row['part_id']
+    for ego in egos:
+        num_per_bucket[ego['age']] += 1
+        for j, val in enumerate(ego['contacts']):
+            contact_matrix[ego['age'], j] += val
     contact_matrix = np.divide(contact_matrix.T, num_per_bucket).T
     return contact_matrix, num_per_bucket
+
+# def make_contact_matrices(df, buckets):
+#     num_per_bucket = np.zeros(len(buckets)+1)
+#     contact_matrix = np.zeros((len(buckets)+1, len(buckets)+1))
+#     # save last participant id
+#     last_id = ''
+#     # Iterate through the DataFrame and update the count_matrix
+#     for _, row in df.iterrows():
+#         b_i = get_bucket_index(row['part_age'], buckets=buckets)
+#         if last_id != row['part_id']:
+#             # count new participants
+#             num_per_bucket[b_i] += 1
+#         if pd.isnull(row['cont_id']) or pd.isnull(row['cnt_age_exact']):
+#             continue
+#         b_j = get_bucket_index(row['cnt_age_exact'], buckets=buckets)
+#         contact_matrix[b_i, b_j] += 1
+#         contact_matrix[b_j, b_i] += 1
+#         last_id = row['part_id']
+#     contact_matrix = np.divide(contact_matrix.T, num_per_bucket).T
+#     return contact_matrix, num_per_bucket
 
 def make_egos_list(df, buckets):
     egos = []
@@ -277,7 +297,7 @@ def log_bins(x, num_bins=5):
     Output: Geometric center of bins -> ndarray, values in bins -> ndarray
     """
     # count_zeros = np.sum(x[x==0])
-    count_zeros = len(x[x==0])
+    count_zeros = len([a for a in x if a==0])
     x = np.sort([a for a in x if a > 0])
     max1, min1 = np.log(np.ceil(max(x))), np.log(np.floor(min(x)))
     x = np.log(x)
