@@ -24,7 +24,7 @@ for model in models:
     else:
         params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
     results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-    with open(f'../output_data/simulations/big/right_{data}_{model}.json', 'w') as file:
+    with open(f'../output_data/simulations/big/right_{data}_{model}2.json', 'w') as file:
         json.dump(results, file)
     
 # no age
@@ -34,5 +34,5 @@ partitions = [n]
 
 egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'input_data/{data}.csv',dist_type=models[1], buckets=buckets,save_fig=False)
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=models[1], prop_infec=10/n, scaling=scale)
-with open(f'../output_data/simulations/big/noAge_{data}_{models[1]}.json', 'w') as file:
+with open(f'../output_data/simulations/big/noAge_{data}_{models[1]}2.json', 'w') as file:
     json.dump(results, file)
