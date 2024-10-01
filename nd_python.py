@@ -3,8 +3,12 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+import scipy as sc
 import math
 import itertools
+from multiprocessing import Pool
+import random
+import pyemd
 import json
 from scipy.stats import nbinom, poisson, geom
 from scipy.optimize import minimize
@@ -71,6 +75,59 @@ def taus_sims(partitions, contact_matrix, taus=[0.05], network_params=None, iter
     partitions = [int(a) for a in partitions]
     parameters = [0.05,inv_gamma]
     return nd_r.big_sims(taus=taus, iters=iterations, n=n, partitions=partitions, dist_type=dist_type, network_params=network_params, contact_matrix=contact_matrix, outbreak_params=parameters, maxtime=maxtime, prop_infec=prop_infec, scaling=scaling)
+
+def emd_error(egos, network, distance_matrix = None, extra_mass_penalty = 5):
+    # check distance matrix and number per bucket, if empty revert to default checks
+    if distance_matrix is None:
+        num_buckets = network['age_brackets'][-1] + 1
+        bins = np.arange(0,num_buckets,1) 
+        distance_matrix = np.zeros((num_buckets, num_buckets))
+        for i in bins:
+            for j in bins:
+                distance_matrix[i,j] = np.float64(np.abs(i-j))
+
+    num_buckets = network['age_brackets'][-1] + 1
+    num_per_bucket = np.zeros(num_buckets)
+    for ego in egos:
+        num_per_bucket[ego['age']] += 1
+    
+    errors, errors_pp = calc_error(egos=egos, network=network, distance_matrix=distance_matrix, extra_mass_penalty=extra_mass_penalty, num_per_bucket=np.array(num_per_bucket, dtype=int))
+ 
+    return errors, errors_pp
+
+def data_from_network(network, n = 10_000, buckets = np.array([5,12,18,30,40,50,60,70])):
+    
+    # choose n random people from the network to create the data set 
+    indices = []
+    num_per_bucket = np.round(n * np.diff(np.array([0] + network['partitions'])) / network['partitions'][-1]).astype(int)
+    for i, top in enumerate(network['partitions']):
+        indices.append(random.sample(range(top), num_per_bucket[i]) if i == 0 else random.sample(range(network['partitions'][i-1], top), num_per_bucket[i]))
+    network_data = [[np.array(network['frequency_distribution'][idx], dtype=int) for idx in age_class] for age_class in indices]
+
+    # convert these ego networks to dataframe rows
+    df = pd.DataFrame({
+        'part_id': [],
+        'cont_id': [],
+        'cnt_age_exact': [],
+        'part_age': [],
+    })
+    part_id, cont_id = 0, 0
+    buckets = np.insert(buckets, 0, 0)
+    buckets = np.insert(buckets, len(buckets), 120)
+    for age_ego, age_class in enumerate(network_data):
+        for ego in age_class:
+            part_id += 1
+            for age_cont, num_contacts in enumerate(ego):
+                for _ in range(num_contacts):
+                    cont_id += 1
+                    # add each contact from ego network
+                    df.loc[len(df)] = [part_id, cont_id, np.random.randint(buckets[age_cont], buckets[age_cont+1]), np.random.randint(buckets[age_ego], buckets[age_ego+1])]
+            # check if individual has no contacts
+            if sum(ego) == 0:
+                df.loc[len(df)] = [part_id, None, None, np.random.randint(buckets[age_ego], buckets[age_ego+1])]
+    return df
+
+
 ################################################# utils ########################################################
 
 def read_in_dataframe(file_path):
@@ -318,3 +375,58 @@ def log_bins(x, num_bins=5):
     midpoints = np.exp(t)
     return midpoints, freq
     
+def calc_error(egos, network, distance_matrix, extra_mass_penalty, num_per_bucket):
+    
+    # Begin parallelisation
+    # Number of threads
+    n = len(num_per_bucket)
+    # check that network is big enough 
+    for i in range(n):
+        if num_per_bucket[i] > network['partitions'][i]:
+            print("The network is smaller than the data.")
+            return None
+    
+    # Data for each thread
+    data = [[] for _ in range(n)]
+    for ego in egos:
+        data[ego['age']].append(np.array(ego['contacts'], dtype=np.float64))
+        
+    # network egos for each thread, big nasty line but it just samples randomly from the network to match age distribution of data
+    indices = [random.sample(range(0, network['partitions'][i]), num_per_bucket[i]) if i == 0 else random.sample(range(network['partitions'][i-1], network['partitions'][i]), num_per_bucket[i]) for i in range(n)]
+    network_data = [[np.array(network['frequency_distribution'][idx], dtype=np.float64) for idx in age_class] for age_class in indices]
+    
+    # run calculation of the W matrix then pool and collect results
+    with Pool(n) as pool:
+        combined_args = zip(data, network_data, [distance_matrix for _ in range(n)], [extra_mass_penalty for _ in range(n)])
+
+        # map() preserves the order of results
+        W = pool.map(calc_error_bucket, combined_args)
+        
+    # run matching problem in parallel and then pool and collect the results
+    with Pool(n) as pool:
+        total_errors = pool.map(solve_matching_problem, W)
+        
+    # calculate total error per person
+    errors_per_person = np.sum(total_errors) / np.sum(num_per_bucket)
+    #normalise the error to be errors per person
+    error = np.divide(total_errors, num_per_bucket)
+    
+    return error, errors_per_person
+
+def calc_error_bucket(arguments):
+    
+    # Calculating the matrix of Wasserstein distances for each pair in an age group
+    data, network_data, distance_matrix, extra_mass_penalty = arguments
+    W_a = np.zeros((len(data), len(data)))
+    for i, ego in enumerate(data):
+        for j, ego_node in enumerate(network_data):
+            # extra mass penalty = A/(mean_mass + 1)
+            penalty = extra_mass_penalty / ((np.sum(ego) + np.sum(ego_node))/2 + 1)
+            W_a[i,j] = pyemd.emd(ego, ego_node, distance_matrix, extra_mass_penalty=penalty)
+    return W_a
+
+def solve_matching_problem(W_a):
+    
+    # find the optimal matching of the W matrix
+    row_ind, col_ind = sc.optimize.linear_sum_assignment(W_a)
+    return W_a[row_ind, col_ind].sum()
