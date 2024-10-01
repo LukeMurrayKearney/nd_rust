@@ -28,7 +28,7 @@ taus = np.array([0.01,0.02,0.03,0.04,0.06,0.08,0.1,0.12,0.14])
 buckets = np.array([])
 partitions = [n]
 
-egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'input_data/{data}.csv',dist_type=models[1], buckets=buckets)
+egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'input_data/{data}.csv',dist_type=models[1], buckets=buckets, save_fig=False)
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=models[1], prop_infec=10/n, scaling=scale)
 with open(f'../output_data/simulations/big/noAge_{data}_{models[1]}.json', 'w') as file:
     json.dump(results, file)
