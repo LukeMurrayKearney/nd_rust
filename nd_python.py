@@ -79,14 +79,14 @@ def taus_sims(partitions, contact_matrix, taus=[0.05], network_params=None, iter
 def emd_error(egos, network, distance_matrix = None, extra_mass_penalty = 5):
     # check distance matrix and number per bucket, if empty revert to default checks
     if distance_matrix is None:
-        num_buckets = network['age_brackets'][-1] + 1
+        num_buckets = network['ages'][-1] + 1
         bins = np.arange(0,num_buckets,1) 
         distance_matrix = np.zeros((num_buckets, num_buckets))
         for i in bins:
             for j in bins:
                 distance_matrix[i,j] = np.float64(np.abs(i-j))
 
-    num_buckets = network['age_brackets'][-1] + 1
+    num_buckets = network['ages'][-1] + 1
     num_per_bucket = np.zeros(num_buckets)
     for ego in egos:
         num_per_bucket[ego['age']] += 1
