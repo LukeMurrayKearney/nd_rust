@@ -11,19 +11,23 @@ partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.8
 data = 'comix2'
 models = ['sbm', 'dpln']
 scale = 'none'
-taus = np.array([0.002,0.004,0.006,0.008,0.01,0.02,0.03,0.04,0.05,0.06,0.07])
+## Attempt 1
+# taus = np.array([0.002,0.004,0.006,0.008,0.01,0.02,0.03,0.04,0.05,0.06,0.07])
+## attempt 2 
+taus = np.array([0.001,0.003,0.005,0.007,0.009,0.015,0.025,0.035,0.045,0.055,0.065])
 
-# for model in models: 
-#     contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
-#     if model == models[0]:
-#         params = []
-#     else:
-#         params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-#     results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-#     with open(f'../output_data/simulations/big/right_{data}_{model}.json', 'w') as file:
-#         json.dump(results, file)
+
+for model in models: 
+    contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
+    if model == models[0]:
+        params = []
+    else:
+        params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
+    results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
+    with open(f'../output_data/simulations/big/right_{data}_{model}.json', 'w') as file:
+        json.dump(results, file)
     
-# # no age
+# no age
 
 buckets = np.array([])
 partitions = [n]
