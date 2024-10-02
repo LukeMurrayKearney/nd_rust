@@ -4,14 +4,15 @@ import numpy as np
 import networkx as nx
 import json
 
-ns, iters = np.arange(10_000,210_000,10_000), 50
+ns, iters = np.arange(10_000,210_000,10_000), 100
+ns = [100_000]
 
 buckets = np.array([5,12,18,30,40,50,60,70])
 
 
 datas = ['poly','comix1', 'comix2']
 models = ['sbm', 'nbinom', 'dpln']
-scale1 = 'fit2'
+scale1 = 'none'
 
 for data in datas:
     for model in models:
@@ -30,8 +31,8 @@ for data in datas:
                 network = nd_p.build_network(n,partitions,contact_matrix,params,model)
                 G = nd_p.to_networkx(network=network)
                 # Compute the average degree
-                degrees = dict(G.degree())
-                average_degree = sum(degrees.values()) / float(G.number_of_nodes())
+                degrees_dict = dict(G.degree())
+                average_degree = sum(degrees_dict.values()) / float(G.number_of_nodes())
 
                 # Compute the degree assortativity coefficient
                 degree_assortativity = nx.degree_assortativity_coefficient(G)
@@ -46,10 +47,10 @@ for data in datas:
                     diameter = -1
                     short_path = -1
 
-                degrees[i,j] = average_degree; assort[i,j] = degree_assortativity; clustering[i,j] = average_clustering; diameters[i,j] = diameter; short_paths[i,j] = short_path 
-        np.savetxt(f'../output_data/characterising/degrees_{data}_{model}.csv', degrees)
-        np.savetxt(f'../output_data/characterising/assort_{data}_{model}.csv', assort)
-        np.savetxt(f'../output_data/characterising/clust_{data}_{model}.csv', clustering)
-        np.savetxt(f'../output_data/characterising/degrees_{data}_{model}.csv', diameters)
-        np.savetxt(f'../output_data/characterising/short_path_{data}_{model}.csv', short_paths)
+                degrees[i,j] = average_degree; assort[i,j] = degree_assortativity; clustering[i,j] = average_clustering; diameters[i,j] = diameter; short_paths[i,j] = short_path
+        np.savetxt(f'../output_data/characterising/small_degrees_{data}_{model}.csv', degrees)
+        np.savetxt(f'../output_data/characterising/small_assort_{data}_{model}.csv', assort)
+        np.savetxt(f'../output_data/characterising/small_clust_{data}_{model}.csv', clustering)
+        np.savetxt(f'../output_data/characterising/small_diameters_{data}_{model}.csv', diameters)
+        np.savetxt(f'../output_data/characterising/small_path_{data}_{model}.csv', short_paths)
         
