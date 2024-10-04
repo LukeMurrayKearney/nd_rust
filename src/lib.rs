@@ -1,7 +1,7 @@
 use distributions::median;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
-use rayon::{prelude::*, result, vec};
+use rayon::prelude::*;
 use crate::dpln::{pdf, sample};
 use crate::run_model::abc_r0;
 
