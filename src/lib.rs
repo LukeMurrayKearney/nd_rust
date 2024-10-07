@@ -107,6 +107,7 @@ fn big_sims(taus:Vec<f64>, iters: usize, n: usize, partitions: Vec<usize>, dist_
     // parallel simulations
     let results: Vec<Vec<(usize,usize,f64)>> = taus.par_iter()
         .map(|tau|{
+            println!("{:?}", tau);
             let tmp: Vec<(usize,usize,f64)> = vec![(0,0,0.); iters];
             tmp.iter()
                 .map(|_|{
