@@ -196,7 +196,7 @@ pub fn quick_run(network_structure: &NetworkStructure, network_properties: &mut 
         .filter(|(_, &x)| x == 2 || x == 3)
         .map(|(i, _)| network_properties.secondary_cases[i] )
         .collect();
-    let r0 = if gen4 < 5 {-1.} else {(gen23.iter().sum::<usize>() as f64) / (gen23.len() as f64)};
+    let r0 = if gen4 < 1 {-1.} else {(gen23.iter().sum::<usize>() as f64) / (gen23.len() as f64)};
     (seir_results.last().unwrap()[2], seir_results.iter().map(|row| row[1]).max().unwrap(), r0)
 }
 
