@@ -8,19 +8,26 @@ use rand_distr::{Binomial, Distribution};
 use rayon::prelude::*;
 use statrs::statistics::Statistics;
 
+// pub struct ScaleParams {
+//     pub a: Vec<f64>,
+//     pub b: Vec<f64>,
+//     pub c: Vec<f64>,
+//     pub d: Vec<f64>,
+//     pub e: Vec<f64>,
+// }
 pub struct ScaleParams {
-    pub a: Vec<f64>,
-    pub b: Vec<f64>,
-    pub c: Vec<f64>,
-    pub d: Vec<f64>,
-    pub e: Vec<f64>,
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
+    pub d: f64,
+    pub e: f64,
 }
 
 impl ScaleParams {
     // pub fn new(a: f64,b: f64, c: f64, d: f64, e: f64,) -> ScaleParams {
     //     ScaleParams {a:a, b:b, c:c, d:d, e:e}
     // }
-    pub fn new(a: Vec<f64>,b: Vec<f64>, c: Vec<f64>, d: Vec<f64>, e: Vec<f64>) -> ScaleParams {
+    pub fn new(a: f64,b: f64, c: f64, d: f64, e: f64) -> ScaleParams {
         ScaleParams {a:a, b:b, c:c, d:d, e:e}
     }
 }
@@ -364,23 +371,26 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
     let geom_infectious_period = Geometric::new(1./network_properties.parameters[1]).unwrap();
     // define parameters of fitted scaling
     let scale_params = if scaling == "fit1" {
-        ScaleParams::new(
-            vec![7.94597576e-02, 1.86501075e-02, 0.27331857, 2.71714397e-01, 1.50843120e-01, 0.22501698, 0.36498229,0.3402533,0.16861257],
-            vec![1.86727109e-01, 1.57216691e-01, 0.26578535, 2.93698607e-01, 2.33321449e-01, 0.3025751, 0.32910101,0.32746589,0.23098462],
-            vec![6.26714288e+04, 1.15274663e+05, 55.08602862, 1.01006951e+04, 2.61115659e+02, 123.57028328, 8.26235973,6.75177633,1.15683718], 
-            vec![9.99749380e-01, 9.99844176e-01, 0.84128853, 9.99305162e-01, 9.71511671e-01, 0.93912153, 0.62576043,0.73053706,0.28046687],
-            vec![-6.26598777e+04, -1.15266709e+05, -46.86310399, -1.00927696e+04, -2.51956809e+02, -115.13632869, 0.72628637,2.23407002,8.0201658])
+        ScaleParams::new(1.92943985e-01, 2.59700437e-01,4.55889377e04,9.99839680e-01,-4.55800575e04)
+        // ScaleParams::new(
+        //     vec![7.94597576e-02, 1.86501075e-02, 0.27331857, 2.71714397e-01, 1.50843120e-01, 0.22501698, 0.36498229,0.3402533,0.16861257],
+        //     vec![1.86727109e-01, 1.57216691e-01, 0.26578535, 2.93698607e-01, 2.33321449e-01, 0.3025751, 0.32910101,0.32746589,0.23098462],
+        //     vec![6.26714288e+04, 1.15274663e+05, 55.08602862, 1.01006951e+04, 2.61115659e+02, 123.57028328, 8.26235973,6.75177633,1.15683718], 
+        //     vec![9.99749380e-01, 9.99844176e-01, 0.84128853, 9.99305162e-01, 9.71511671e-01, 0.93912153, 0.62576043,0.73053706,0.28046687],
+        //     vec![-6.26598777e+04, -1.15266709e+05, -46.86310399, -1.00927696e+04, -2.51956809e+02, -115.13632869, 0.72628637,2.23407002,8.0201658])
     }
     else if scaling == "fit2" {
-        ScaleParams::new(
-            vec![6.87326840e-01, 7.38784056e-02, 5.77862944e-01, 2.13415641e-01, 3.29687844e-01, 3.85160330e-01, 3.24887201e-01,0.25216752,5.27970340e-02],
-            vec![4.04847685e-01, 1.55839474e-01, 4.98656357e-01, 2.80893647e-01, 2.70297825e-01, 2.97786924e-01, 3.61132503e-01,0.35245878,1.71913746e-01],
-            vec![9.50900768e+04, 1.94907963e+05, 4.96158310e+04, 5.52982066e+04, 2.69952333e+04, 2.34848788e+04, 7.52264235e+03,4.50828294,7.44934579e+03], 
-            vec![9.99885451e-01, 9.99928224e-01, 9.99822099e-01, 9.99878834e-01, 9.99780538e-01, 9.99786125e-01, 9.99440989e-01,0.62107256,9.99746592e-01],
-            vec![-9.50788242e+04, -1.94898582e+05, -4.96091268e+04, -5.52894549e+04, -2.69858020e+04, -2.34759408e+04, -7.51374782e+03,5.22464991,-7.43959415e+03])
+        ScaleParams::new(5.93853399e-02,1.81040353e-01,  1.08985503e+05,  9.99930465e-01, -1.08976101e+05)
+        // ScaleParams::new(
+        //     vec![6.87326840e-01, 7.38784056e-02, 5.77862944e-01, 2.13415641e-01, 3.29687844e-01, 3.85160330e-01, 3.24887201e-01,0.25216752,5.27970340e-02],
+        //     vec![4.04847685e-01, 1.55839474e-01, 4.98656357e-01, 2.80893647e-01, 2.70297825e-01, 2.97786924e-01, 3.61132503e-01,0.35245878,1.71913746e-01],
+        //     vec![9.50900768e+04, 1.94907963e+05, 4.96158310e+04, 5.52982066e+04, 2.69952333e+04, 2.34848788e+04, 7.52264235e+03,4.50828294,7.44934579e+03], 
+        //     vec![9.99885451e-01, 9.99928224e-01, 9.99822099e-01, 9.99878834e-01, 9.99780538e-01, 9.99786125e-01, 9.99440989e-01,0.62107256,9.99746592e-01],
+        //     vec![-9.50788242e+04, -1.94898582e+05, -4.96091268e+04, -5.52894549e+04, -2.69858020e+04, -2.34759408e+04, -7.51374782e+03,5.22464991,-7.43959415e+03])
     }
     else {
-        ScaleParams::new(vec![0.], vec![0.], vec![0.], vec![0.], vec![0.])
+        ScaleParams::new(0., 0., 0., 0., 0.)
+        // ScaleParams::new(vec![0.], vec![0.], vec![0.], vec![0.], vec![0.])
     };
     
     for (i, state) in network_properties.nodal_states.iter().enumerate() {
@@ -429,7 +439,7 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
                                         if rng.gen_bool(0.5) {(i, network_structure.degrees[i] as f64)} 
                                         else {(link.1, network_structure.degrees[link.1] as f64)}
                                     };
-                                    network_properties.parameters[0] * (scale_fit(&scale_params, k, network_structure.ages[max_idx]) / scale_fit(&scale_params, 1., network_structure.ages[max_idx]))
+                                    network_properties.parameters[0] * (scale_fit(&scale_params, k) / scale_fit(&scale_params, 1.))
                                 },
                                 "fit2" => {
                                     let (max_idx, k) = if network_structure.degrees[i] > network_structure.degrees[link.1] {
@@ -442,7 +452,7 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
                                         if rng.gen_bool(0.5) {(i, network_structure.degrees[i] as f64)} 
                                         else {(link.1, network_structure.degrees[link.1] as f64)}
                                     };
-                                    network_properties.parameters[0] * (scale_fit(&scale_params, k, network_structure.ages[max_idx]) / scale_fit(&scale_params, 1., network_structure.ages[max_idx]))
+                                    network_properties.parameters[0] * (scale_fit(&scale_params, k / scale_fit(&scale_params, 1.)))
                                 },
                                 _ => network_properties.parameters[0]
                             };
@@ -481,8 +491,8 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
     new_infections
 }
 
-pub fn scale_fit(params: &ScaleParams, k: f64, age: usize) -> f64 {
-    params.a[age]*(-params.b[age]*k).exp()*k.powi(2) + params.c[age]/k.powf(params.d[age]) + params.e[age]/k
+pub fn scale_fit(params: &ScaleParams, k: f64) -> f64 {
+    params.a*(-params.b*k).exp()*k.powi(2) + params.c/k.powf(params.d) + params.e/k
 }
 
 // pub fn run_cavity(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected:f64) -> 
