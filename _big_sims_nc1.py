@@ -3,7 +3,7 @@ import nd_python as nd_p
 import numpy as np
 import json
 
-n, iters = 50_000, 100
+n, iters = 100_000, 100
 
 buckets = np.array([5,12,18,30,40,50,60,70])
 partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.866*n, n]
