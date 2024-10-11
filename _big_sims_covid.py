@@ -12,9 +12,10 @@ datas = ['comix2','comix1']
 model = 'dpln'
 ## attempt 1
 # taus = np.arange(0.09,0.16, 0.001)
-## attempt 2
-taus = np.arange(0.05,0.091,0.001)
-
+## attempt 2/4
+# taus = np.arange(0.05,0.091,0.001)
+## attempt 5
+taus = np.arange(0.09,0.16, 0.001)
 
 
 print(1)
@@ -23,7 +24,7 @@ scale = 'fit2'
 contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
 params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-with open(f'../output_data/simulations/big/covid_{data}3.json', 'w') as file:
+with open(f'../output_data/simulations/big/covid_{data}5.json', 'w') as file:
     json.dump(results, file)
     
 print(2)
@@ -32,5 +33,5 @@ scale = 'fit1'
 contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
 params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-with open(f'../output_data/simulations/big/covid_{data}4.json', 'w') as file:
+with open(f'../output_data/simulations/big/covid_{data}5.json', 'w') as file:
     json.dump(results, file)
