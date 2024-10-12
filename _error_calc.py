@@ -21,10 +21,11 @@ for i in bins:
 
 for data in datas:
     for model in models:
+        print(data, model)
         error, error_breakdown = [], []
         error_with_itself, error_with_itself_breakdown = [], []
         egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'input_data/{data}.csv',dist_type=model)
-        for i in range(100):
+        for i in range(iters):
             if i % 2 == 0:
                 print(i)
 
@@ -43,21 +44,21 @@ for data in datas:
             error_with_itself_breakdown.append(errors)
             error_with_itself.append(err_pp)
             
-            # with open(f'../output_data/errors/breakdown_{data}_{model}.csv', 'w', newline='') as file:
-            #     writer = csv.writer(file)
-            #     for row in error_breakdown:
-            #         writer.writerow(row)
-                    
-            with open(f'../output_data/errors/breakdown_itself_{data}_{model}.csv', 'w', newline='') as file:
-                writer = csv.writer(file)
-                for row in error_with_itself_breakdown:
-                    writer.writerow(row)
+        # with open(f'../output_data/errors/breakdown_{data}_{model}.csv', 'w', newline='') as file:
+        #     writer = csv.writer(file)
+        #     for row in error_breakdown:
+        #         writer.writerow(row)
+                
+        with open(f'../output_data/errors/breakdown_itself_{data}_{model}.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            for row in error_with_itself_breakdown:
+                writer.writerow(row)
 
-            # with open(f'../output_data/errors/{data}_{model}.csv', 'w', newline='') as file:
-            #     writer = csv.writer(file)
-            #     writer.writerow(error)
+        # with open(f'../output_data/errors/{data}_{model}.csv', 'w', newline='') as file:
+        #     writer = csv.writer(file)
+        #     writer.writerow(error)
 
 
-            with open(f'../output_data/errors/itself_{data}_{model}.csv', 'w', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow(error_with_itself)
+        with open(f'../output_data/errors/itself_{data}_{model}.csv', 'w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(error_with_itself)
