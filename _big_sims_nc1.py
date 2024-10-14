@@ -40,7 +40,7 @@ for i, model in enumerate(models):
     else:
         params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
     results = nd_p.taus_sims(taus=taus[i], partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-    with open(f'../output_data/simulations/big/right_{data}_{model}7.json', 'w') as file:
+    with open(f'../output_data/simulations/big/right_{data}_{model}9.json', 'w') as file:
         json.dump(results, file)
     
 # no age

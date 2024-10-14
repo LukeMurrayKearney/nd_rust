@@ -30,7 +30,7 @@ model = 'dpln'
 ## attempt 8
 # taus = np.arange(0.001,0.026,0.001)
 ## attempt 9
-taus = 
+# taus = 
 
 print(1)
 data = datas[0]
@@ -38,7 +38,7 @@ scale = 'fit2'
 contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
 params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-with open(f'../output_data/simulations/big/age_scale_{data}_{model}_{scale}8.json', 'w') as file:
+with open(f'../output_data/simulations/big/age_scale_{data}_{model}_{scale}9.json', 'w') as file:
     json.dump(results, file)
     
 print(2)
@@ -47,5 +47,5 @@ scale = 'fit1'
 contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
 params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-with open(f'../output_data/simulations/big/age_scale_{data}_{model}_{scale}8.json', 'w') as file:
+with open(f'../output_data/simulations/big/age_scale_{data}_{model}_{scale}9.json', 'w') as file:
     json.dump(results, file)

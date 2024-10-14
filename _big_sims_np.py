@@ -20,8 +20,11 @@ scale = 'none'
 ## attempt 4
 # taus = [np.array([0.0025,0.0075,0.085,0.09,0.095,0.1]), np.arange(0.001,0.01,0.001)]
 ## attempt 7
-taus = [np.concatenate((np.array([0.005,0.01,0.015,0.025,0.035,0.045,0.055,0.065,0.07,0.075,0.08,0.02,0.03,0.04,0.05,0.06]), np.array([0.0025,0.0075,0.085,0.09,0.095,0.1]))),
-        np.concatenate((np.arange(0.001,0.01,0.001), np.array([0.005,0.01,0.015,0.025,0.035,0.045,0.055,0.065,0.07,0.075,0.08,0.02,0.03,0.04,0.05,0.06])))]
+# taus = [np.concatenate((np.array([0.005,0.01,0.015,0.025,0.035,0.045,0.055,0.065,0.07,0.075,0.08,0.02,0.03,0.04,0.05,0.06]), np.array([0.0025,0.0075,0.085,0.09,0.095,0.1]))),
+#         np.concatenate((np.arange(0.001,0.01,0.001), np.array([0.005,0.01,0.015,0.025,0.035,0.045,0.055,0.065,0.07,0.075,0.08,0.02,0.03,0.04,0.05,0.06])))]
+## attempt 9 
+taus = []
+
 
 for i, model in enumerate(models): 
     contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
@@ -30,7 +33,7 @@ for i, model in enumerate(models):
     else:
         params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
     results = nd_p.taus_sims(taus=taus[i], partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-    with open(f'../output_data/simulations/big/right_{data}_{model}7.json', 'w') as file:
+    with open(f'../output_data/simulations/big/right_{data}_{model}9.json', 'w') as file:
         json.dump(results, file)
     
 # # no age
