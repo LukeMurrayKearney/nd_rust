@@ -30,7 +30,8 @@ model = 'dpln'
 ## attempt 8
 # taus = np.arange(0.001,0.026,0.001)
 ## attempt 9
-# taus = 
+taus = [np.arange(0.0005,0.02,0.0005),
+        np.concatenate((np.arange(0.25,0.4,0.01), np.arange(0.5,1,0.02)))]
 
 print(1)
 data = datas[0]
