@@ -168,6 +168,7 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
     let mut infections: Vec<Vec<Vec<usize>>> = vec![vec![Vec::new()]; partitions.len()];
     let mut final_sizes: Vec<usize> = Vec::new();
     let mut peak_times: Vec<usize> = Vec::new();
+    let mut takeoffs: Vec<usize> = Vec::new();
     // A vector of each generation, with a vector of secondary cases from each iteration 
     let mut secondary_cases_vec: Vec<Vec<Vec<usize>>> = vec![vec![Vec::new()]];
     // same as secondary cases for degrees
@@ -199,6 +200,12 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
                 secondary_cases_vec.push(vec![indices.iter().map(|&i| secondary_cases[i]).collect()]);
                 degrees_vec.push(vec![indices.iter().map(|&i| network.degrees[i]).collect()]);
             }
+        }
+        if final_gen > 3 {
+            takeoffs.push(1);
+        }
+        else {
+            takeoffs.push(0);
         }
 
 
@@ -233,6 +240,7 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
         dict.set_item("peak time", peak_times.to_object(py))?;
         dict.set_item("secondary cases by gen", secondary_cases_vec.to_object(py))?;
         dict.set_item("degrees by gen", degrees_vec.to_object(py))?;
+        dict.set_item("takeoff", takeoffs.to_object(py))?;
         dict.set_item("tau", outbreak_params[0].to_object(py))?;
         
 

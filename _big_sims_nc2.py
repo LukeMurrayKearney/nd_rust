@@ -3,7 +3,7 @@ import nd_python as nd_p
 import numpy as np
 import json
 
-n, iters = 100_000, 10
+n, iters = 100_000, 20
 
 buckets = np.array([5,12,18,30,40,50,60,70])
 partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.866*n, n]
@@ -32,7 +32,9 @@ scale = 'none'
 ## attempt 9
 # taus = [np.arange(0.05,0.005,0.3), np.arange(0.00025,0.015,0.00025)]
 ## no age 2
-taus = np.arange(0.00025,0.015,0.00025)
+# taus = np.arange(0.00025,0.015,0.00025)
+## no age 3
+taus = np.arange(0.001, 0.02, 0.002)
 
 
 # for i, model in enumerate(models): 
@@ -53,5 +55,5 @@ partitions = [n]
 egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'input_data/{data}.csv',dist_type=models[1], buckets=buckets,save_fig=False)
 print('starting sims')
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=models[1], prop_infec=10/n, scaling=scale)
-with open(f'../output_data/simulations/big/noAge_{data}_{models[1]}2.json', 'w') as file:
+with open(f'../output_data/simulations/big/noAge_{data}_{models[1]}3.json', 'w') as file:
     json.dump(results, file)
