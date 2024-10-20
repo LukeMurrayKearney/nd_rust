@@ -33,7 +33,7 @@ scale = 'none'
 # taus = [np.arange(0.05,0.005,0.3), np.arange(0.00025,0.015,0.00025)]
 ## no age 2
 # taus = np.arange(0.00025,0.015,0.00025)
-## no age 3
+## no age 3, 4
 taus = np.arange(0.001, 0.02, 0.002)
 
 
@@ -55,5 +55,8 @@ partitions = [n]
 egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'input_data/{data}.csv',dist_type=models[1], buckets=buckets,save_fig=False)
 print('starting sims')
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=models[1], prop_infec=10/n, scaling=scale)
-with open(f'../output_data/simulations/big/noAge_{data}_{models[1]}3.json', 'w') as file:
+with open(f'../output_data/simulations/big/noAge_{data}_{models[1]}4.json', 'w') as file:
     json.dump(results, file)
+    
+np.savetxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', contact_matrix,delimiter=',')
+np.savetxt(f'input_data/parameters/params_{data}_{models[1]}.csv', params, delimiter=',')
