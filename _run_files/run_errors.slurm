@@ -19,7 +19,7 @@ function parallel_limit {
 
     # While the number of background jobs is equal to or greater than MAX_PROCS, wait
     while [ "$(jobs -r | wc -l)" -ge "$MAX_PROCS" ]; do
-        sleep 0.1  # Sleep for a short time before checking again
+        sleep 1  # Sleep for a short time before checking again
     done
 }
 
@@ -28,7 +28,7 @@ for data in "${datas[@]}"; do
     # Loop through each string in models
     for model in "${models[@]}"; do
         # Call the Python script with the current pair of strings in parallel
-        parallel_limit python3 my_script.py "$data" "$model"
+        parallel_limit python3 _errors.py "$data" "$model"
     done
 done
 
