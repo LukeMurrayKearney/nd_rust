@@ -62,3 +62,5 @@ for data in datas:
         with open(f'../output_data/errors/itself_{data}_{model}.csv', 'w', newline='') as file:
             writer = csv.writer(file)
             writer.writerow(error_with_itself)
+            
+        
