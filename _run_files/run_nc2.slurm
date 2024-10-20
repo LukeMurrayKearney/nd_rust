@@ -14,4 +14,4 @@ maturin develop --release
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-python ../_big_sims_nc2.py
+python _big_sims_nc2.py
