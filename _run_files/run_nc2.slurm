@@ -6,10 +6,12 @@
 
 #SBATCH --time=48:00:00
 
-source ~/p1/bin/activate
+
 module purge
 module restore p1
+source ~/p1/bin/activate
+maturin develop --release
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-python nd_rust/_big_sims_nc1.py
+python ../_big_sims_nc2.py
