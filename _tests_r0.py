@@ -27,5 +27,5 @@ for i, data in enumerate(data_names):
         # simulate outbreaks with r0
         infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=taus[i], iterations=iters, n=n, dist_type=model, prop_infec=10/n)
         # save outputs
-        with open(f'output_data/simulations/test_sims_{data}_{model}.json', 'w') as file:
+        with open(f'../output_data/simulations/test_sims_{data}_{model}.json', 'w') as file:
             json.dump(infections, file)
