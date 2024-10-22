@@ -15,7 +15,7 @@ taus = np.arange(0.005,0.025,0.005)
 
 scale = 'fit2'
 # contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}_no_age.csv', delimiter=',')
-# params = np.array(np.genfromtxt(f'input_data/parameters/params_{data}_{model}_no_age.csv'))
+# params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}_no_age.csv', delimiter='\n')
 egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'input_data/{data}.csv',dist_type=model, buckets=buckets,save_fig=False)
 results = nd_p.taus_sims(taus=taus, partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
 with open(f'../output_data/simulations/big/{data}_{model}_{scale}_no_age.json', 'w') as file:
