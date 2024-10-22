@@ -1,5 +1,5 @@
 import nd_rust as nd_r
-import nd_python as nd_p 
+import nd_python_avon as nd_p 
 import numpy as np
 import json
 
@@ -10,8 +10,8 @@ partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.8
 
 data_names = ['comix1','comix2', 'poly']
 # models = ['sbm','nbinom','dpln']
-models = ['sbm']
-scale = ['none' for _ in range(data_names)]
+models = ['dpln']
+scales = ['none' for _ in range(data_names)]
 # sbm
 # taus = [0.19,0.14,0.055]
 # dpln
@@ -35,5 +35,5 @@ for i, data in enumerate(data_names):
         # simulate outbreaks with r0
         infections = nd_p.simulate(partitions=partitions, contact_matrix=contact_matrix,network_params=params, tau=taus[i], iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scales[i])
         # save outputs
-        with open(f'../output_data/simulations/test_sims_{data}_{model}.json', 'w') as file:
+        with open(f'../output_data/simulations/test_sims_{data}_{model}_{scales[i]}.json', 'w') as file:
             json.dump(infections, file)
