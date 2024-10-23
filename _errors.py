@@ -31,7 +31,7 @@ def main():
     # error, error_breakdown = [], []
     error_with_itself, error_with_itself_breakdown = [], []
     contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
-    params = np.genfromtxt(f'nd_rust/input_data/parameters/params_{data}_{model}.csv', delimiter=',')
+    params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
     for i in range(iters):
         # my model error
         network = nd_p.build_network(n,partitions,contact_matrix,params,model)
