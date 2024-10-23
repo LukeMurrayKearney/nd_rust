@@ -30,7 +30,8 @@ def main():
     print(data, model)
     # error, error_breakdown = [], []
     error_with_itself, error_with_itself_breakdown = [], []
-    egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'input_data/{data}.csv',dist_type=model)
+    egos, contact_matrix, params = nd_p.fit_to_data(input_file_path=f'~/nd_rust/input_data/{data}.csv',dist_type=model)
+    print(contact_matrix)
     for i in range(iters):
         if i % 2 == 0:
             print(i)
