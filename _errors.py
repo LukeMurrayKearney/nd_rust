@@ -30,8 +30,8 @@ def main():
     print(data, model)
     # error, error_breakdown = [], []
     error_with_itself, error_with_itself_breakdown = [], []
-    contact_matrix = np.genfromtxt(f'../../input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
-    params = np.genfromtxt(f'~/nd_rust/input_data/parameters/params_{data}_{model}.csv', delimiter=',')
+    contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
+    params = np.genfromtxt(f'nd_rust/input_data/parameters/params_{data}_{model}.csv', delimiter=',')
     for i in range(iters):
         # my model error
         network = nd_p.build_network(n,partitions,contact_matrix,params,model)
@@ -45,6 +45,8 @@ def main():
         # network error of my model with true network
         data = nd_p.data_from_network(network=network)
         egos_itself, contact_matrix_itself, params_itself = nd_p.fit_to_data(df=data, save_fig=False, output_file_path="fits/network_comix1", buckets=buckets,dist_type=model)
+        print(data, model, '\nparams\n', len(params), len(params[0]))
+        print(data, model, '\ncontact mat\n', len(params), len(params[0]))
         network = nd_p.build_network(n, partitions, params_itself, contact_matrix_itself,dist_type=model)
         errors, err_pp = nd_p.emd_error(egos_itself, network, distance_matrix=distance_matrix)
         error_with_itself_breakdown.append(errors)
