@@ -43,10 +43,10 @@ def main():
             print(i)
         
         # network error of my model with true network
-        data = nd_p.data_from_network(network=network)
-        egos_itself, contact_matrix_itself, params_itself = nd_p.fit_to_data(df=data, save_fig=False, output_file_path="fits/network_comix1", buckets=buckets,dist_type=model)
-        print(data, model, '\nparams\n', len(params), len(params[0]))
-        print(data, model, '\ncontact mat\n', len(params), len(params[0]))
+        new_data = nd_p.data_from_network(network=network)
+        egos_itself, contact_matrix_itself, params_itself = nd_p.fit_to_data(df=new_data, save_fig=False, output_file_path="fits/network_comix1", buckets=buckets,dist_type=model)
+        print(data, model, '\nparams\n', len(params_itself), len(params_itself[0]))
+        print(data, model, '\ncontact mat\n', len(contact_matrix_itself), len(contact_matrix_itself[0]))
         network = nd_p.build_network(n, partitions, params_itself, contact_matrix_itself,dist_type=model)
         errors, err_pp = nd_p.emd_error(egos_itself, network, distance_matrix=distance_matrix)
         error_with_itself_breakdown.append(errors)
