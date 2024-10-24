@@ -418,7 +418,7 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
                                 // max at 1, when k=1 we want f(k) = 1
                                 "fit1" => {
                                     // use the k max on either side of link
-                                    let (max_idx, k) = if network_structure.degrees[i] > network_structure.degrees[link.1] {
+                                    let (_, k) = if network_structure.degrees[i] > network_structure.degrees[link.1] {
                                         (i, network_structure.degrees[i] as f64)
                                     }
                                     else if network_structure.degrees[i] < network_structure.degrees[link.1] {
@@ -431,7 +431,7 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
                                     network_properties.parameters[0] * (scale_fit(&scale_params, k) / scale_fit(&scale_params, 1.))
                                 },
                                 "fit2" => {
-                                    let (max_idx, k) = if network_structure.degrees[i] > network_structure.degrees[link.1] {
+                                    let (_, k) = if network_structure.degrees[i] > network_structure.degrees[link.1] {
                                         (i, network_structure.degrees[i] as f64)
                                     }
                                     else if network_structure.degrees[i] < network_structure.degrees[link.1] {
