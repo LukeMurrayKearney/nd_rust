@@ -215,27 +215,14 @@ pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &m
     let mut rng: ThreadRng = rand::thread_rng();
     // create vector to store results
     let mut individual_results: Vec<Vec<usize>> = Vec::new(); 
-    individual_results.push(
-        network_properties.nodal_states
-            .iter()
-            .map(|x| {
-                match x {
-                    State::Susceptible => 0,
-                    State::Infected(_) => 1,
-                    _ => 2
-                }
-            })
-            .collect()
-    );
     // summary results
     let mut seir_results: Vec<Vec<usize>> = Vec::new();
-    seir_results.push(network_properties.count_states());
     let mut new_cases = Vec::new();
 
     //start simulation
-    for _ in 0..maxtime {
-        // step a day
-        new_cases.push(step_tau_leap(network_structure, network_properties, &mut rng, scaling));
+    for _ in 0..maxtime+1 {
+        // collect summary days summer stats
+        seir_results.push(network_properties.count_states());
         // append all individual states to results at the end of the day
         individual_results.push(
             network_properties.nodal_states
@@ -249,8 +236,10 @@ pub fn run_tau_leap(network_structure: &NetworkStructure, network_properties: &m
                 })
                 .collect()
         );
-        // collect summary days summer stats
-        seir_results.push(network_properties.count_states());
+
+        // step a day
+        new_cases.push(step_tau_leap(network_structure, network_properties, &mut rng, scaling));
+        
         // check if there is infetion in the population
         if seir_results.last().unwrap()[1] == 0 {
             break;
@@ -399,7 +388,7 @@ fn step_tau_leap(network_structure: &NetworkStructure, network_properties: &mut 
             State::Susceptible => (),
             State::Infected(days) => {
                 //infection countdown
-                if days <= 0 {
+                if days <= 1 {
                     // // SEIRS
                     // next_states[i] = State::Recovered(poisson_recovered_period.sample(rng).round() as usize);
                     // SEIR
