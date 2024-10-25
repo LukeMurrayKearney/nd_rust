@@ -11,7 +11,7 @@ partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.8
 data_names = ['comix1','comix2', 'poly']
 # models = ['sbm','nbinom','dpln']
 models = ['dpln']
-scales = ['none' for _ in range(data_names)]
+scales = ['none' for _ in data_names]
 # sbm
 # taus = [0.19,0.14,0.055]
 # dpln
