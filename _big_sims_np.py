@@ -12,9 +12,11 @@ data = 'poly'
 models = ['sbm', 'dpln']
 scale = 'none'
 
+## test
+taus = [np.arange(0.002,0.2,0.001)/10, np.arange(0.002,0.8,0.001)/10]
 
 ## a1
-taus = [np.arange(0.002,0.2,0.001),np.arange(0.002,0.8,0.001)]
+# taus = [np.arange(0.002,0.2,0.001),np.arange(0.002,0.8,0.001)]
 
 
 ## attempt 1 
@@ -44,8 +46,8 @@ for i, model in enumerate(models):
         params = []
     else:
         params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-    results = nd_p.taus_sims(taus=taus[i], partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale)
-    with open(f'../output_data/simulations/big/fixed/{data}_{model}.json', 'w') as file:
+    results = nd_p.taus_sims(taus=taus[i], partitions=partitions, contact_matrix=contact_matrix,network_params=params, iterations=iters, n=n, dist_type=model, prop_infec=10/n, scaling=scale, inv_gamma=40)
+    with open(f'../output_data/simulations/big/fixed/{data}_{model}_test.json', 'w') as file:
         json.dump(results, file)
     
 # # no age
