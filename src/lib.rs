@@ -183,10 +183,10 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
             _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
         };
         let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
-        let (individuals, seir, generation, secondary_cases, _, new) = run_model::run_tau_leap(&network, &mut properties, maxtime, prop_infec, scaling);
+        let (individuals, sir, generation, secondary_cases, _, new) = run_model::run_tau_leap(&network, &mut properties, maxtime, prop_infec, scaling);
         // return final size of iteration
-        peak_times.push(seir.iter().enumerate().max_by_key(|&(_, inner_vec)| inner_vec[2]).map(|(index, _)| index).unwrap());
-        final_sizes.push(*seir.last().unwrap().last().unwrap());
+        peak_times.push(sir.iter().enumerate().max_by_key(|&(_, inner_vec)| inner_vec[2]).map(|(index, _)| index).unwrap());
+        final_sizes.push(*sir.last().unwrap().last().unwrap());
         new_cases.push(new);
         // get secondary cases and degrees in each generation
         let final_gen = *generation.iter().max().unwrap();
@@ -249,6 +249,40 @@ fn infection_sims(iters: usize, n: usize, partitions: Vec<usize>, dist_type: &st
     })
 }
 
+#[pyfunction]
+fn single_sim(n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, maxtime: usize, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
+
+    let network: network_structure::NetworkStructure = match dist_type { 
+        "sbm" => {
+            network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
+        },
+        _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
+    };
+    let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
+    let (individuals, sir, generation, secondary_cases, disease_from, new_cases) = run_model::run_tau_leap(&network, &mut properties, maxtime, prop_infec, scaling);
+    
+    // Initialize the Python interpreter
+    Python::with_gil(|py| {
+        // Create output PyDict
+        let dict = PyDict::new_bound(py);
+        
+        // Insert vectors into the results dictionary
+        dict.set_item("individuals", individuals.to_object(py))?;
+        dict.set_item("SIR", sir.to_object(py))?;
+        dict.set_item("generations", generation.to_object(py))?;
+        dict.set_item("secondary_cases", secondary_cases.to_object(py))?;
+        dict.set_item("disease_from", disease_from.to_object(py))?;
+        dict.set_item("new_cases", new_cases.to_object(py))?;
+        dict.set_item("tau", outbreak_params[0].to_object(py))?;
+        dict.set_item("adjacency_matrix", network.adjacency_matrix.to_object(py))?;
+        dict.set_item("degrees", network.degrees.to_object(py))?;
+        dict.set_item("ages", network.ages.to_object(py))?;
+
+        // Convert dict to PyObject and return
+        Ok(dict.into())
+    })
+}
+
 //////////////////////////////// Double Pareto Log-Normal functions /////////////////////////////////////////
 
 #[pyfunction]
@@ -296,6 +330,7 @@ fn nd_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(test_r0_fit, m)?)?;
     m.add_function(wrap_pyfunction!(big_sims, m)?)?;
     m.add_function(wrap_pyfunction!(infection_sims, m)?)?;
+    m.add_function(wrap_pyfunction!(single_sim, m)?)?;
     m.add_function(wrap_pyfunction!(dpln_pdf, m)?)?;
     m.add_function(wrap_pyfunction!(dpln_sample, m)?)?;
     m.add_function(wrap_pyfunction!(fit_dpln, m)?)?;

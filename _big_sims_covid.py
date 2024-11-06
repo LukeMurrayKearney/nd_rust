@@ -1,4 +1,3 @@
-import nd_rust as nd_r
 import nd_python as nd_p 
 import numpy as np
 import json
