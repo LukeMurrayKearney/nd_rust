@@ -32,6 +32,27 @@ impl ScaleParams {
     }
 }
 
+
+pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, maxtime: usize, initially_infected: f64, scaling: &str) {
+
+    network_properties.initialize_infection_degree(network_structure, initially_infected, network_properties.parameters[1], scaling);
+    let mut seir_results: Vec<Vec<usize>> = Vec::new();
+    seir_results.push(network_properties.count_states());
+
+    
+}
+
+fn step_sellke(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, rng: &mut ThreadRng, scaling: &str) -> usize {
+    // save next states to update infection simultaneously 
+    let mut next_states: Vec<State> = vec![State::Susceptible; network_structure.degrees.len()];
+    let mut new_infections = 0;
+
+
+
+    new_infections
+}
+
+
 pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: &Vec<usize>, contact_matrix: &Vec<Vec<f64>>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, prior_param: f64, scaling: &str) 
     -> (Vec<f64>, f64) {
 

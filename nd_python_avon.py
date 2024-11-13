@@ -56,7 +56,7 @@ def to_networkx(network={}):
             G.add_edge(link[0], link[1])
     return G    
 
-def fit_to_r0(partitions, contact_matrix, r0=3, network_params=None, iterations=30, n=30_000, dist_type='nbinom', inv_gamma=4, prop_infec=1e-3, num_networks=30, num_restarts=30, scaling="None"):
+def fit_to_r0(partitions, contact_matrix, r0=3, network_params=None, iterations=30, n=30_000, dist_type='nbinom', inv_gamma=7, prop_infec=1e-3, num_networks=30, num_restarts=30, scaling="None"):
     
     outbreak_params = [r0, inv_gamma]
     partitions = [int(a) for a in partitions]
@@ -64,13 +64,13 @@ def fit_to_r0(partitions, contact_matrix, r0=3, network_params=None, iterations=
         network_params = []
     return nd_r.test_r0_fit(n=n, partitions=partitions, dist_type=dist_type, network_params=network_params, contact_matrix=contact_matrix, outbreak_params=outbreak_params, prop_infec=prop_infec, num_networks=num_networks, target_r0=r0, iters=iterations, num_replays=num_restarts, scaling=scaling)
 
-def simulate(partitions, contact_matrix, network_params=None, tau=0.05, iterations=50, n=30_000, dist_type='nbinom', maxtime=10_000, inv_gamma=4, prop_infec=1e-3, scaling="None"):
+def simulate(partitions, contact_matrix, network_params=None, tau=0.05, iterations=50, n=30_000, dist_type='nbinom', maxtime=10_000, inv_gamma=7, prop_infec=1e-3, scaling="None"):
     ## Need to write some sensible code for this, depending on if we want to give params or a network
     partitions = [int(a) for a in partitions]
     parameters = [tau,inv_gamma]
     return nd_r.infection_sims(iters=iterations, n=n, partitions=partitions, dist_type=dist_type, network_params=network_params, contact_matrix=contact_matrix, outbreak_params=parameters, maxtime=maxtime, prop_infec=prop_infec, scaling=scaling)
     
-def taus_sims(partitions, contact_matrix, taus=[0.05], network_params=None, iterations=50, n=30_000, dist_type='nbinom', maxtime=10_000, inv_gamma=4, prop_infec=1e-3, scaling="None"):
+def taus_sims(partitions, contact_matrix, taus=[0.05], network_params=None, iterations=50, n=30_000, dist_type='nbinom', maxtime=10_000, inv_gamma=7, prop_infec=1e-3, scaling="None"):
     ## Need to write some sensible code for this, depending on if we want to give params or a network
     partitions = [int(a) for a in partitions]
     parameters = [0.05,inv_gamma]

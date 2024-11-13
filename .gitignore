@@ -70,3 +70,8 @@ docs/_build/
 
 # Pyenv
 .python-version
+
+# ingore
+_tests.ipynb
+_what.py
+_tests_data
