@@ -1,4 +1,4 @@
-import nd_python as nd_p 
+import nd_python_avon as nd_p 
 import numpy as np
 import json
 n, iters = 100_000, 48
@@ -23,5 +23,5 @@ for i, data in enumerate(datas):
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         for index, tau in enumerate(taus):
             result = nd_p.sellke_test(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,iterations=iters, tau=tau,prop_infec=10/n)
-            with open(f'../output_data/simulations/big/sellke/{data}_{model}_{index}2.json','w') as f:
+            with open(f'../output_data/simulations/big/sellke/{data}_{model}_{index}0.json','w') as f:
                 json.dump(result, f)
