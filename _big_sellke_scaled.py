@@ -8,7 +8,7 @@ partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.8
 
 datas = ['comix1','comix2','poly']
 models = ['sbm','dpln']
-scales = ['none']
+scales = ['fit1']
 
 ## 0,1,2
 k_hat = 6
@@ -22,6 +22,6 @@ for i, data in enumerate(datas):
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         for index, tau in enumerate(taus):
-            result = nd_p.sellke_test(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,iterations=iters, tau=tau,prop_infec=10/n)
-            with open(f'../output_data/simulations/big/sellke/{data}_{model}_{index}2.json','w') as f:
+            result = nd_p.sellke_test(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,iterations=iters, tau=tau,prop_infec=10/n, scaling=scales[0])
+            with open(f'../output_data/simulations/big/sellke/{data}_{model}_{index}_{scales[0]}_0.json','w') as f:
                 json.dump(result, f)
