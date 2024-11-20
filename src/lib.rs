@@ -98,6 +98,52 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, network_params
 
 
 #[pyfunction]
+fn sellke_sim(iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
+
+    let network: network_structure::NetworkStructure = match dist_type { 
+        "sbm" => {
+            network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
+        },
+        _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
+    };
+    let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
+    let (mut t, mut I_events, mut R_events, mut sir, mut sir_ages): (Vec<Vec<f64>>, Vec<Vec<i64>>, Vec<Vec<i64>>, Vec<Vec<Vec<usize>>>, Vec<Vec<Vec<Vec<usize>>>>) = (Vec::new(),Vec::new(),Vec::new(),Vec::new(),Vec::new());
+    let (mut secondary_cases, mut generations, mut infected_by): (Vec<Vec<usize>>, Vec<Vec<usize>>, Vec<Vec<usize>>) = (Vec::new(), Vec::new(), Vec::new());
+    // parallel simulations
+    let results: Vec<(Vec<f64>, Vec<i64>, Vec<i64>, Vec<Vec<usize>>, Vec<Vec<Vec<usize>>>, Vec<usize>, Vec<usize>, Vec<usize>)>
+        = (0..iterations)
+            .into_par_iter()
+            .map(|_| {
+                run_model::run_sellke(&network, &mut properties.clone(), prop_infec, scaling)
+            })
+            .collect();
+    for sim in results.iter() {
+        t.push(sim.0.clone()); I_events.push(sim.1.clone()); R_events.push(sim.2.clone()); sir.push(sim.3.clone()); sir_ages.push(sim.4.clone());
+        secondary_cases.push(sim.5.clone()); generations.push(sim.6.clone()); infected_by.push(sim.7.clone());
+    }
+
+    // Initialize the Python interpreter
+    Python::with_gil(|py| {
+        // Create output PyDict
+        let dict = PyDict::new_bound(py);
+        
+        dict.set_item("t", t.to_object(py))?;
+        dict.set_item("I_events", I_events.to_object(py))?;
+        dict.set_item("R_events", R_events.to_object(py))?;
+        dict.set_item("SIR", sir.to_object(py))?;
+        dict.set_item("SIR_ages", sir_ages.to_object(py))?;
+        dict.set_item("secondary_cases", secondary_cases.to_object(py))?;
+        dict.set_item("generations", generations.to_object(py))?;
+        dict.set_item("infected_by", infected_by.to_object(py))?;
+        
+
+        // Convert dict to PyObject and return
+        Ok(dict.into())
+    })
+}
+
+
+#[pyfunction]
 fn big_sims(taus:Vec<f64>, iters: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, maxtime: usize, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
 
     let mut final_sizes: Vec<Vec<usize>> = vec![vec![0; iters]; taus.len()];
@@ -328,6 +374,7 @@ fn nd_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(sbm_from_vars, m)?)?;
     m.add_function(wrap_pyfunction!(mcmc_data, m)?)?;
     m.add_function(wrap_pyfunction!(test_r0_fit, m)?)?;
+    m.add_function(wrap_pyfunction!(sellke_sim, m)?)?;
     m.add_function(wrap_pyfunction!(big_sims, m)?)?;
     m.add_function(wrap_pyfunction!(infection_sims, m)?)?;
     m.add_function(wrap_pyfunction!(single_sim, m)?)?;

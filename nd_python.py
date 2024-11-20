@@ -15,6 +15,13 @@ from scipy.optimize import minimize
 plt.rcParams.update({'font.size': 14})  # Adjust the font size
 
 ################################## build into a package ##################################
+def sellke_test(partitions, contact_matrix, network_params=None, tau=0.25, iterations=1, n=100_000, dist_type='nbinom', inv_gamma=7, prop_infec=1e-3, scaling="None"):
+    partitions = [int(a) for a in partitions]
+    parameters = [tau,inv_gamma]
+    # if iterations == 1:
+    return nd_r.sellke_sim(iterations=iterations, n=n, partitions=partitions, dist_type=dist_type, network_params=network_params, contact_matrix=contact_matrix, outbreak_params=parameters, prop_infec=prop_infec, scaling=scaling)
+
+
 def mcmc(data, days, partitions, contact_matrix, network_params, outbreak_params, tau_0=0.02, p_hosp=0.01, iters=10_000, dist_type='nbinom', n=20_000, prior_param=5,scaling='fit1'):
     partitions = [int(a) for a in partitions]
     return nd_r.mcmc_data(data=data, days=days, tau_0=tau_0, proportion_hosp=p_hosp, iters=iters, dist_type=dist_type, n=n, partitions=partitions, contact_matrix=contact_matrix, network_params=network_params, outbreak_params=outbreak_params, prior_param=prior_param,scaling=scaling)
