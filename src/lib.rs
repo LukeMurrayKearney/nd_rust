@@ -107,10 +107,10 @@ fn sellke_sim(iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &s
         _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
     };
     let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
-    let (mut t, mut I_events, mut R_events, mut sir, mut sir_ages): (Vec<Vec<f64>>, Vec<Vec<i64>>, Vec<Vec<i64>>, Vec<Vec<Vec<usize>>>, Vec<Vec<Vec<Vec<usize>>>>) = (Vec::new(),Vec::new(),Vec::new(),Vec::new(),Vec::new());
-    let (mut secondary_cases, mut generations, mut infected_by): (Vec<Vec<usize>>, Vec<Vec<usize>>, Vec<Vec<usize>>) = (Vec::new(), Vec::new(), Vec::new());
+    let (mut t, mut I_events, mut R_events, mut sir): (Vec<Vec<f64>>, Vec<Vec<i64>>, Vec<Vec<i64>>, Vec<Vec<Vec<usize>>>) = (Vec::new(),Vec::new(),Vec::new(),Vec::new());
+    let (mut secondary_cases, mut generations, mut infected_by): (Vec<Vec<usize>>, Vec<Vec<usize>>, Vec<Vec<i64>>) = (Vec::new(), Vec::new(), Vec::new());
     // parallel simulations
-    let results: Vec<(Vec<f64>, Vec<i64>, Vec<i64>, Vec<Vec<usize>>, Vec<Vec<Vec<usize>>>, Vec<usize>, Vec<usize>, Vec<usize>)>
+    let results: Vec<(Vec<f64>, Vec<i64>, Vec<i64>, Vec<Vec<usize>>, Vec<usize>, Vec<usize>, Vec<i64>)>
         = (0..iterations)
             .into_par_iter()
             .map(|_| {
@@ -118,8 +118,8 @@ fn sellke_sim(iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &s
             })
             .collect();
     for sim in results.iter() {
-        t.push(sim.0.clone()); I_events.push(sim.1.clone()); R_events.push(sim.2.clone()); sir.push(sim.3.clone()); sir_ages.push(sim.4.clone());
-        secondary_cases.push(sim.5.clone()); generations.push(sim.6.clone()); infected_by.push(sim.7.clone());
+        t.push(sim.0.clone()); I_events.push(sim.1.clone()); R_events.push(sim.2.clone()); sir.push(sim.3.clone());
+        secondary_cases.push(sim.4.clone()); generations.push(sim.5.clone()); infected_by.push(sim.6.clone());
     }
 
     // Initialize the Python interpreter
@@ -131,7 +131,6 @@ fn sellke_sim(iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &s
         dict.set_item("I_events", I_events.to_object(py))?;
         dict.set_item("R_events", R_events.to_object(py))?;
         dict.set_item("SIR", sir.to_object(py))?;
-        dict.set_item("SIR_ages", sir_ages.to_object(py))?;
         dict.set_item("secondary_cases", secondary_cases.to_object(py))?;
         dict.set_item("generations", generations.to_object(py))?;
         dict.set_item("infected_by", infected_by.to_object(py))?;

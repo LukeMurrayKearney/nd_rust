@@ -61,7 +61,7 @@ impl ScaleParams {
 
 
 pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, initially_infected: f64, scaling: &str) 
-    -> (Vec<f64>, Vec<i64>, Vec<i64>, Vec<Vec<usize>>, Vec<Vec<Vec<usize>>>, Vec<usize>, Vec<usize>, Vec<usize>) {
+    -> (Vec<f64>, Vec<i64>, Vec<i64>, Vec<Vec<usize>>, Vec<usize>, Vec<usize>, Vec<i64>) {
 
     // seed an outbreak
     let n = network_structure.partitions.last().unwrap().to_owned();
@@ -70,9 +70,9 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     // network_properties.initialize_infection_sellke_rand(initially_infected);
     // holding sir 
     let mut sir: Vec<Vec<usize>> = Vec::new();
-    let mut sir_ages: Vec<Vec<Vec<usize>>> = Vec::new();
+    // let mut sir_ages: Vec<Vec<Vec<usize>>> = Vec::new();
     sir.push(network_properties.count_states());
-    sir_ages.push(network_properties.count_states_age(network_structure));
+    // sir_ages.push(network_properties.count_states_age(network_structure));
 
     // data structures for holding events
     let mut I_cur: Vec<usize> = network_properties.nodal_states
@@ -155,7 +155,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
             R_events.push(min_index_node as i64);
             I_cur = I_cur.iter().filter(|&&x| x != min_index_node).map(|&x| x).collect::<Vec<usize>>();
             update_sir(&mut sir, false);
-            update_sir_ages(&mut sir_ages, false, network_structure.ages[min_index_node]);
+            // update_sir_ages(&mut sir_ages, false, network_structure.ages[min_index_node]);
             La_t = Laprop;
             // update ct 
             update_ct(&mut ct, &network_structure, false, min_index_node, scaling);
@@ -192,7 +192,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                 R_events.push(min_index_node as i64);
                 I_cur = I_cur.iter().filter(|&&x| x != min_index_node).map(|&x| x).collect::<Vec<usize>>();
                 update_sir(&mut sir, false);
-                update_sir_ages(&mut sir_ages, false, network_structure.ages[min_index_node]);
+                // update_sir_ages(&mut sir_ages, false, network_structure.ages[min_index_node]);
                 La_t = Laprop.clone();
                 update_ct(&mut ct, &network_structure, false, min_index_node, scaling);
             }
@@ -221,7 +221,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                 R_events.push(-1);
                 I_cur.push(first_infection);
                 update_sir(&mut sir, true);
-                update_sir_ages(&mut sir_ages, true, network_structure.ages[first_infection]);
+                // update_sir_ages(&mut sir_ages, true, network_structure.ages[first_infection]);
                 update_ct(&mut ct, &network_structure, true, first_infection, scaling);
                 
                 // add info on secondary cases generation and infection from 
@@ -267,7 +267,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     // println!("I_cur = {:?}\nI_events = {:?}\nR_events = {:?}\n", I_cur, I_events, R_events);
     // println!("t = {:?}",t);
     println!("{:?}", sir.last().unwrap());
-    (t, I_events, R_events, sir, sir_ages, network_properties.secondary_cases.clone(), network_properties.generation.clone(), network_properties.secondary_cases.clone())
+    (t, I_events, R_events, sir, network_properties.secondary_cases.clone(), network_properties.generation.clone(), network_properties.disease_from.clone())
 }
 
 fn single_FOI(degrees: (usize,usize), scaling: &str) -> f64 {
