@@ -9,9 +9,15 @@ for filename in os.listdir(directory):
     # Construct full file path
     filepath = os.path.join(directory, filename)
     print(filepath)
-    with open(filepath,'r') as f:
-        result = json.load(f)
-    reduced = {'SIR': result['SIR'], 't': result['t']}
-    print(filepath[:-5] + '_red.json')
-    with open(filepath[:-5] + '_red.json','w') as f:
-        json.dump(reduced,f)
+    try:
+        with open(filepath,'r') as f:
+            result = json.load(f)
+            f.close()
+        reduced = {'SIR': result['SIR'], 't': result['t']}
+        print(filepath[:-5] + '_red.json')
+        with open(filepath[:-5] + '_red.json','w') as f:
+            json.dump(reduced,f)
+            f.close()
+    except Exception as e: 
+        print(f"Error processing file {filepath}: {e}")
+        continue
