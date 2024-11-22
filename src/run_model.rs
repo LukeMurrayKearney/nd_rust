@@ -67,6 +67,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     let n = network_structure.partitions.last().unwrap().to_owned();
     let mut rng = rand::thread_rng();
     network_properties.initialize_infection_sellke(network_structure, initially_infected, scaling);
+    let scale_params = ScaleParams::from_string(scaling);
     // network_properties.initialize_infection_sellke_rand(initially_infected);
     // holding sir 
     let mut sir: Vec<Vec<usize>> = Vec::new();
@@ -91,7 +92,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     let mut ct = Array1::<f64>::zeros(n);
     // base infection pressure proportion ct on adjacency matrix 
     for &person in I_cur.iter() {
-        update_ct(&mut ct, network_structure, true, person, scaling);
+        update_ct(&mut ct, network_structure, true, person, scaling, &scale_params);
     }
     
     // define infection periods
@@ -158,7 +159,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
             // update_sir_ages(&mut sir_ages, false, network_structure.ages[min_index_node]);
             La_t = Laprop;
             // update ct 
-            update_ct(&mut ct, &network_structure, false, min_index_node, scaling);
+            update_ct(&mut ct, &network_structure, false, min_index_node, scaling,&scale_params);
         }
         else {
             // we may have multiple infections before a recovery,
@@ -194,7 +195,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                 update_sir(&mut sir, false);
                 // update_sir_ages(&mut sir_ages, false, network_structure.ages[min_index_node]);
                 La_t = Laprop.clone();
-                update_ct(&mut ct, &network_structure, false, min_index_node, scaling);
+                update_ct(&mut ct, &network_structure, false, min_index_node, scaling, &scale_params);
             }
             else {
                 // println!("Infection\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
@@ -222,7 +223,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                 I_cur.push(first_infection);
                 update_sir(&mut sir, true);
                 // update_sir_ages(&mut sir_ages, true, network_structure.ages[first_infection]);
-                update_ct(&mut ct, &network_structure, true, first_infection, scaling);
+                update_ct(&mut ct, &network_structure, true, first_infection, scaling,&scale_params);
                 
                 // add info on secondary cases generation and infection from 
                 // to choose secondary case pick randomly with probability based on each persons FOI on i
@@ -246,11 +247,11 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                             // println!("{}",I_events.iter().position(|&x| x == (j as i64)).unwrap());
                             // println!("{}", t[I_events.iter().position(|&x| x == (j as i64)).unwrap()]);
                             // println!("{time_infec}");
-                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling) * beta * time_infec
+                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling,&scale_params) * beta * time_infec
                         }
                         else {
                             let time_infec = tt - t[I_events.iter().position(|&x| x == (j as i64)).unwrap()];
-                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling) * beta * time_infec
+                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling, &scale_params) * beta * time_infec
                         }
                     })
                     .collect();
@@ -270,16 +271,14 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     (t, I_events, R_events, sir, network_properties.secondary_cases.clone(), network_properties.generation.clone(), network_properties.disease_from.clone())
 }
 
-fn single_FOI(degrees: (usize,usize), scaling: &str) -> f64 {
+fn single_FOI(degrees: (usize,usize), scaling: &str, scale_params: &ScaleParams) -> f64 {
     match scaling {
         "fit1" => {
-            let scale_params = ScaleParams::from_string(scaling);
             let k = cmp::max(degrees.0, degrees.1);
             // change in c for this link scaled
             1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
         }
         "fit2" => {
-            let scale_params = ScaleParams::from_string(scaling);
             let k = cmp::max(degrees.0, degrees.1);
             // change in c for this link scaled
             1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
@@ -290,13 +289,12 @@ fn single_FOI(degrees: (usize,usize), scaling: &str) -> f64 {
     }
 }
 
-fn update_ct(ct: &mut Array1<f64>, network: &NetworkStructure, infection: bool, i: usize, scaling: &str) {
+fn update_ct(ct: &mut Array1<f64>, network: &NetworkStructure, infection: bool, i: usize, scaling: &str, scale_params: &ScaleParams) {
     
     for link in network.adjacency_matrix[i].iter() {
         // we want to decide which side and if we are scaling 
         match scaling {
             "fit1" => {
-                let scale_params = ScaleParams::from_string(scaling);
                 let k = cmp::max(network.degrees[link.0], network.degrees[link.1]);
                 // change in c for this link scaled
                 let dc = 1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.));
@@ -309,7 +307,6 @@ fn update_ct(ct: &mut Array1<f64>, network: &NetworkStructure, infection: bool, 
                 }
             }
             "fit2" => {
-                let scale_params = ScaleParams::from_string(scaling);
                 let k = cmp::max(network.degrees[link.0], network.degrees[link.1]);
                 // change in c for this link scaled
                 let dc = 1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.));
@@ -363,18 +360,6 @@ fn update_sir_ages(sir_ages: &mut Vec<Vec<Vec<usize>>>, infection: bool, age: us
         sir_ages.push(tmp);
     }
 }
-
-
-fn step_sellke(network_structure: &NetworkStructure, network_properties: &mut NetworkProperties, rng: &mut ThreadRng, scaling: &str) -> usize {
-    // save next states to update infection simultaneously 
-    let mut next_states: Vec<State> = vec![State::Susceptible; network_structure.degrees.len()];
-    let mut new_infections = 0;
-
-
-
-    new_infections
-}
-
 
 pub fn fit_to_hosp_data(data: Vec<f64>, days: Vec<usize>, tau_0: f64, proportion_hosp: f64, iters: usize, dist_type: &str, n: usize, partitions: &Vec<usize>, contact_matrix: &Vec<Vec<f64>>, network_params: &Vec<Vec<f64>>, outbreak_params: &Vec<f64>, prior_param: f64, scaling: &str) 
     -> (Vec<f64>, f64) {
