@@ -10,9 +10,12 @@ datas = ['comix1','comix2','poly']
 models = ['sbm','dpln']
 scales = ['none']
 
-## 0,1,2
+## 0,1,2,3,4,5,6
 k_hat = 6
 taus = [i/(7*k_hat*2) for i in range(1,21)]
+## 7,8,9,10,11,12
+# k_hat = 6
+# taus = [i/(7*k_hat) for i in range(1,21)]
 
 for i, data in enumerate(datas):
     for model in models:

@@ -10,7 +10,7 @@ datas = ['comix1','comix2','poly']
 models = ['sbm','dpln']
 scales = ['fit1']
 
-## 0,1,2
+## 0,1,2,3,4,5,6
 k_hat = 6
 taus = [i/(7*k_hat*2) for i in range(1,21)]
 
