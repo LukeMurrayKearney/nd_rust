@@ -25,7 +25,7 @@ import numpy as np
 
 datas = ['comix1', 'comix2','poly']
 models = ['sbm', 'dpln']
-for sim_num in [3,4,5,6,7,8,9,10]:
+for sim_num in range(21):
     final_sizes, peak_heights, r0s = {}, {}, {}
     for data in datas:
         final_sizes[data], peak_heights[data], r0s[data] = {}, {}, {}
