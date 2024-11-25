@@ -43,19 +43,20 @@ for sim_num in [3,4,5,6,7,8,9,10]:
                         final_sizes[data][model][i].append(sir[-1][-1])
                         peak_heights[data][model][i].append(np.max([a[1] for a in sir]))
                         tmp_r0 = []
+                        max_gen = max(tmp['generations'][j])
                         for node_idx, cases in enumerate(tmp['secondary_cases'][j]):
-                            if tmp['generations'][j][node_idx] in [2,3]:
+                            if tmp['generations'][j][node_idx] in [1] and max_gen >= 4:
                                 tmp_r0.append(cases)
                         r0s[data][model][i].append(np.mean(tmp_r0))                
                 except:
                     print(f'we have no file for {data}, {model} ({i})')
 
     for data in datas:                
-        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/fs_{data}_{sim_num}.json', 'w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/try1_fs_{data}_{sim_num}.json', 'w') as f:
             json.dump(final_sizes[data], f)
         for key in peak_heights[data].keys():
             peak_heights[data][key] = [[int(y) for y in x] for x in peak_heights[data][key]] 
-        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/ph_{data}_{sim_num}.json', 'w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/try1_ph_{data}_{sim_num}.json', 'w') as f:
             json.dump(peak_heights[data], f)
-        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/r0_{data}_{sim_num}.json', 'w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/try1_r0_{data}_{sim_num}.json', 'w') as f:
             json.dump(r0s[data], f)
