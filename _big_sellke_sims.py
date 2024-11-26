@@ -22,8 +22,11 @@ scales = ['none']
 ## 21,22,23,24,25,26
 k_hat = 6
 taus = [i/(7*k_hat*100) for i in range(1,21)]
+## 27-35
+k_hat = 6
+taus = np.arange(0.00001,0.0002,0.00001)
 
-for sim_num in range(22,27):
+for sim_num in range(27,35):
     for i, data in enumerate(datas):
         for model in models:
             contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
