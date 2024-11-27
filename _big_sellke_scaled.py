@@ -11,16 +11,22 @@ models = ['sbm','dpln']
 scales = ['fit1']
 
 ## 0,1,2,3,4,5,6
-k_hat = 6
-taus = [i/(7*k_hat*2) for i in range(1,21)]
+# k_hat = 6
+# taus = [i/(7*k_hat*2) for i in range(1,21)]
 # ## 7,8,9,10,11,12
 # k_hat = 6
 # taus = [i/(7*k_hat) for i in range(1,21)]
-# ## 13,14,15,16,17,18,19,20
+# ## 13,14,15,16,17,18,19
 # k_hat = 6
 # taus = [i/(7*k_hat*0.5) for i in range(1,21)]
+## 20-23
+# k_hat = 6
+# taus = [i/(7*k_hat*1.5) for i in range(1,21)]
+## 24-27
+k_hat = 6
+taus = [i/(7*k_hat*1.5) for i in range(1,21)]
 
-for sim_num in range(13,21):
+for sim_num in range(24,28):
     for i, data in enumerate(datas):
         for model in models:
             contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')

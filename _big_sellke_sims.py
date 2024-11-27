@@ -10,21 +10,22 @@ datas = ['comix1','comix2','poly']
 models = ['sbm','dpln']
 scales = ['none']
 
-## 0,1,2,3,4,5,6
+## 0-11
 k_hat = 6
 taus = [i/(7*k_hat*2) for i in range(1,21)]
-## 7,8,9,10,11,12
+## 12-23
 # k_hat = 6
 # taus = [i/(7*k_hat) for i in range(1,21)]
-## 13,14,15,16,17,18,19,20
+## 24-35
 # k_hat = 6
 # taus = [i/(7*k_hat*10) for i in range(1,21)]
-# ## 21,22,23,24,25,26
+## 36-47
 # k_hat = 6
 # taus = [i/(7*k_hat*100) for i in range(1,21)]
-# ## 27-35
-# k_hat = 6
-# taus = np.arange(0.00001,0.0002,0.00001)
+# ## 48-59
+k_hat = 6
+taus = [i/(7*k_hat*10) for i in range(1,21)]
+
 
 for sim_num in range(27,35):
     for i, data in enumerate(datas):
