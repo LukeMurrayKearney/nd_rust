@@ -234,27 +234,24 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                 let impacts: Vec<f64> = contacts
                     .iter()
                     .map(|&j|{
-                        // neighbour never infected
-                        if !I_events.contains(&(j as i64)) {
-                            return 0.
-                        }
-                        // neighbour infected 
-                        else if R_events.contains(&(j as i64)) {
-                            // calculate how long the neighbour was infected for
-                            let time_infec = t[R_events.iter().position(|&x| x == (j as i64)).unwrap()] - t[I_events.iter().position(|&x| x == (j as i64)).unwrap()];
-                            // println!("{}",R_events.iter().position(|&x| x == (j as i64)).unwrap());
-                            // println!("{}", t[R_events.iter().position(|&x| x == (j as i64)).unwrap()]);
-                            // println!("{}",I_events.iter().position(|&x| x == (j as i64)).unwrap());
-                            // println!("{}", t[I_events.iter().position(|&x| x == (j as i64)).unwrap()]);
-                            // println!("{time_infec}");
-                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling,&scale_params) * beta * time_infec
+                        // this is wrong, we cannot be infected by someone who isnt infected oops
+                        // else if R_events.contains(&(j as i64)) {
+                        //     // calculate how long the neighbour was infected for.. 
+                        //     let time_infec = t[R_events.iter().position(|&x| x == (j as i64)).unwrap()] - t[I_events.iter().position(|&x| x == (j as i64)).unwrap()];
+                            
+                        //     return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling,&scale_params) * time_infec
+                        // }
+                        // if neighbour infected
+                        if I_events.contains(&(j as i64)) && !R_events.contains(&(j as i64)){
+                            let time_infec = tt - t[I_events.iter().position(|&x| x == (j as i64)).unwrap()];
+                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling, &scale_params)
                         }
                         else {
-                            let time_infec = tt - t[I_events.iter().position(|&x| x == (j as i64)).unwrap()];
-                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling, &scale_params) * beta * time_infec
+                            return 0.;
                         }
                     })
                     .collect();
+                // println!("contacts: {:?}\nimpacts: {:?}\nI_events: {:?}\nR_events: {:?}",contacts, impacts, I_events, R_events);
                 let dist = WeightedIndex::new(&impacts).unwrap();
                 let index_case = contacts[dist.sample(&mut rng)];
                 network_properties.disease_from[first_infection] = index_case as i64;
@@ -267,7 +264,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     }
     // println!("I_cur = {:?}\nI_events = {:?}\nR_events = {:?}\n", I_cur, I_events, R_events);
     // println!("t = {:?}",t);
-    println!("{:?}", sir.last().unwrap());
+    // println!("{:?}", sir.last().unwrap());
     (t, I_events, R_events, sir, network_properties.secondary_cases.clone(), network_properties.generation.clone(), network_properties.disease_from.clone())
 }
 

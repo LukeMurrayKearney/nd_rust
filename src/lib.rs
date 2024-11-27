@@ -4,6 +4,7 @@ use pyo3::types::PyDict;
 use rayon::prelude::*;
 use crate::dpln::{pdf, sample};
 use crate::run_model::abc_r0;
+use crate::network_structure::NetworkStructure;
 
 mod network_structure;
 mod distributions;
@@ -96,6 +97,41 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, network_params
 
 //////////////////////////////////////////// outbreak simulation //////////////////////////////////////
 
+#[pyfunction]
+fn small_sellke(n: usize, adjacency_matrix: Vec<Vec<(usize,usize)>>, ages: Vec<usize>, outbreak_params: Vec<f64>, prop_infec: f64) -> PyResult<Py<PyDict>> {
+
+    let mut partitions = vec![0; ages.iter().max().unwrap().to_owned()+1];
+    for &age in ages.iter() {
+        partitions[age] += 1;
+    }
+    let network = NetworkStructure{
+        adjacency_matrix: adjacency_matrix.clone(),
+        degrees: adjacency_matrix.iter().map(|x| x.len()).collect(),
+        ages: ages,
+        frequency_distribution: Vec::new(),
+        partitions: partitions
+    };
+    let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
+    let (t, I_events, R_events, sir, secondary_cases, generations, infected_by) = run_model::run_sellke(&network, &mut properties.clone(), prop_infec, "none");
+
+    // Initialize the Python interpreter
+    Python::with_gil(|py| {
+        // Create output PyDict
+        let dict = PyDict::new_bound(py);
+        
+        dict.set_item("t", t.to_object(py))?;
+        dict.set_item("I_events", I_events.to_object(py))?;
+        dict.set_item("R_events", R_events.to_object(py))?;
+        dict.set_item("SIR", sir.to_object(py))?;
+        dict.set_item("secondary_cases", secondary_cases.to_object(py))?;
+        dict.set_item("generations", generations.to_object(py))?;
+        dict.set_item("infected_by", infected_by.to_object(py))?;
+        
+
+        // Convert dict to PyObject and return
+        Ok(dict.into())
+    })
+}
 
 #[pyfunction]
 fn sellke_sim(iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
@@ -380,5 +416,6 @@ fn nd_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(dpln_pdf, m)?)?;
     m.add_function(wrap_pyfunction!(dpln_sample, m)?)?;
     m.add_function(wrap_pyfunction!(fit_dpln, m)?)?;
+    m.add_function(wrap_pyfunction!(small_sellke, m)?)?;
     Ok(())
 }
