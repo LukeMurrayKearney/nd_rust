@@ -23,22 +23,22 @@ taus = [i/(7*k_hat*2) for i in range(1,21)]
 # k_hat = 6
 # taus = [i/(7*k_hat*100) for i in range(1,21)]
 # ## 48-59
-k_hat = 6
+# k_hat = 6
 # taus = [i/(7*k_hat*10) for i in range(1,21)]
 ## 60-71
 # taus = [i/(7*k_hat*50) for i in range(1,21)]
 ## 72-83
 # taus = [(i/7*k_hat*50) for i in range(1,21)]
 ## 84-90
-taus = [(2*i/7*k_hat) for i in range(1,21)]
+# taus = [(2*i/7*k_hat) for i in range(1,21)]
 ## 91-97
-taus = [(2*i/7*k_hat) for i in range(1,21)]
+# taus = [(2*i/7*k_hat) for i in range(1,21)]
 
 
 
 
 
-for sim_num in range(84,91):
+for sim_num in range(12):
     for i, data in enumerate(datas):
         for model in models:
             contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
@@ -48,5 +48,5 @@ for sim_num in range(84,91):
                 params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
             for index, tau in enumerate(taus):
                 result = nd_p.sellke_test(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,iterations=iters, tau=tau,prop_infec=10/n)
-                with open(f'../output_data/simulations/big/sellke/{data}_{model}_{index}_{sim_num}.json','w') as f:
+                with open(f'../output_data/simulations/big/sellke/{data}_{model}_{index}_{sim_num}_new.json','w') as f:
                     json.dump(result, f)
