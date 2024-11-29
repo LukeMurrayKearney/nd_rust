@@ -47,10 +47,10 @@ taus = [2*i/(7*k_hat) for i in range(1,21)]
 
 #### small #####
 ## 0-100
-np.linspace(0.0001,1,100)
+taus = np.linspace(0.0001,1,100)
 
 
-for sim_num in range(51):
+for sim_num in range(11):
     for i, data in enumerate(datas):
         for model in models:
             contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
