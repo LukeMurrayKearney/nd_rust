@@ -34,11 +34,20 @@ taus = [i/(7*k_hat*2) for i in range(1,21)]
 ## 91-97
 # taus = [(2*i/7*k_hat) for i in range(1,21)]
 
+#### new ####
+## 0-11
+# k_hat = 6
+# taus = [i/(7*k_hat*2) for i in range(1,21)]
+## 12-23
+# taus = [i/(7*k_hat) for i in range(1,21)]
+## 23-30
+taus = [2*i/(7*k_hat) for i in range(1,21)]
+## 31-39
+# taus = [2*i/(7*k_hat) for i in range(1,21)]
 
 
 
-
-for sim_num in range(12):
+for sim_num in range(23,31):
     for i, data in enumerate(datas):
         for model in models:
             contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
