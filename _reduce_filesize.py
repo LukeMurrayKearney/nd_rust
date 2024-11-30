@@ -35,7 +35,7 @@ for sim_num in range(21):
             print(data, model)
             final_sizes[data][model], peak_heights[data][model], r0s[data][model], r0s1[data][model] = [], [], [], []
             all_r0[data][model] = []
-            for i in range(20):
+            for i in range(100):
                 final_sizes[data][model].append([])
                 peak_heights[data][model].append([])
                 r0s[data][model].append([])
