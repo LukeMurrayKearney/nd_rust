@@ -25,7 +25,7 @@ import numpy as np
 
 datas = ['comix1', 'comix2','poly']
 models = ['sbm', 'dpln']
-for sim_num in range(21):
+for sim_num in range(40):
     final_sizes, peak_heights, r0s, r0s1 = {}, {}, {}, {}
     all_r0 = {}
     for data in datas:
@@ -35,14 +35,14 @@ for sim_num in range(21):
             print(data, model)
             final_sizes[data][model], peak_heights[data][model], r0s[data][model], r0s1[data][model] = [], [], [], []
             all_r0[data][model] = []
-            for i in range(100):
+            for i in range(20):
                 final_sizes[data][model].append([])
                 peak_heights[data][model].append([])
                 r0s[data][model].append([])
                 r0s1[data][model].append([])
                 all_r0[data][model].append([[] for _ in range(11)])
                 try:
-                    with open(f'../output_data/simulations/big/sellke/{data}_{model}_{i}_fit1_{sim_num}_small.json', 'r') as f:
+                    with open(f'../output_data/simulations/big/sellke/{data}_{model}_{i}_fit1_{sim_num}_new.json', 'r') as f:
                         tmp = json.load(f)
                     for j, sir in enumerate(tmp['SIR']):
                         max_gen = max(tmp['generations'][j])
@@ -63,15 +63,15 @@ for sim_num in range(21):
                     print(f'we have no file for {data}, {model} ({i})')
 
     for data in datas:
-        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/fs_{data}_scale_{sim_num}_small.json', 'w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/fs_{data}_scale_{sim_num}_new.json', 'w') as f:
             json.dump(final_sizes[data], f)
         for key in peak_heights[data].keys():
             peak_heights[data][key] = [[int(y) for y in x] for x in peak_heights[data][key]]
-        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/ph_{data}_scale_{sim_num}_small.json', 'w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/ph_{data}_scale_{sim_num}_new.json', 'w') as f:
             json.dump(peak_heights[data], f)
-        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/r0_{data}_scale_{sim_num}_small.json', 'w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/r0_{data}_scale_{sim_num}_new.json', 'w') as f:
             json.dump(r0s[data], f)
-        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/1_r0_{data}_scale_{sim_num}_small.json', 'w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/1_r0_{data}_scale_{sim_num}_new.json', 'w') as f:
             json.dump(r0s1[data], f)
-        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/r0s_{data}_scale_{sim_num}_small.json', 'w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/summary_stats/r0s_{data}_scale_{sim_num}_new.json', 'w') as f:
             json.dump(all_r0[data], f)
