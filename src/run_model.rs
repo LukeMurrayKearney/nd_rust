@@ -157,7 +157,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
             I_cur = I_cur.iter().filter(|&&x| x != min_index_node).map(|&x| x).collect::<Vec<usize>>();
             update_sir(&mut sir, false);
             // update_sir_ages(&mut sir_ages, false, network_structure.ages[min_index_node]);
-            La_t = Laprop;
+            La_t = Laprop.clone();
             // update ct 
             update_ct(&mut ct, &network_structure, false, min_index_node, scaling,&scale_params);
         }
@@ -166,10 +166,10 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
             // to get correct increase in FOI we need to do these in the right order 
             let mut waiting_infections: Vec<usize> = Vec::new();
             for (i, &threshold) in thresholds.iter().enumerate().filter(|(_,&x)| x>=0.) {
+                // println!("threshold = {threshold}");
+                // println!("i = {i}\n");
                 // infection event 
                 if threshold < Laprop[i] {
-                    // println!("threshold = {threshold}");
-                    // println!("i = {i}\n");
                     waiting_infections.push(i);
                 }
             }
@@ -178,25 +178,17 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                 // println!("Recovery\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
                 // do recovery
                 recovery_times.remove(min_index_vec);
-                let tmp = tt;
-                tt = min_r;
-                // // find when individual infected ( dont actually need this because adding tt when R added)
-                // let tmp = t[I_events
-                //     .iter()
-                //     .enumerate()
-                //     .find(|(_ ,&x)| (x as usize) == min_index_node)
-                //     .unwrap().0];
-
-                t.push(min_r);
+                tt = min_r.clone();
+                t.push(min_r.clone());
                 // update SIR and event vecs
                 I_events.push(-1);
                 R_events.push(min_index_node as i64);
                 I_cur = I_cur.iter().filter(|&&x| x != min_index_node).map(|&x| x).collect::<Vec<usize>>();
                 update_sir(&mut sir, false);
-                // update_sir_ages(&mut sir_ages, false, network_structure.ages[min_index_node]);
                 La_t = Laprop.clone();
                 update_ct(&mut ct, &network_structure, false, min_index_node, scaling, &scale_params);
             }
+            // do infection
             else {
                 // println!("Infection\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
                 // we need to find which threshold would break first, not trivial because of network structure
@@ -206,24 +198,15 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                     .unwrap()
                     .to_owned();
                 // time of first infection
-                let tmp = tt;
                 tt = tt + ((thresholds[first_infection] - La_t[first_infection])/(Laprop[first_infection] - La_t[first_infection]))*dtprop;
                 // set a new La to be used at the start of next iteration
                 let ratio = thresholds[first_infection]/Laprop[first_infection];
                 // println!("first infection = {:?}\nratio = {:?}\n", first_infection, ratio);
-                La_t = Laprop*ratio;
+                La_t = &La_t + &lambda*ratio;
                 thresholds[first_infection] = -1.;
-                t.push(tt);
+                t.push(tt.clone());
                 // add their recovery time
                 recovery_times.push((first_infection, I_periods[first_infection] + tt));
-                
-                // update SIR and event vecs
-                I_events.push(first_infection as i64);
-                R_events.push(-1);
-                I_cur.push(first_infection);
-                update_sir(&mut sir, true);
-                // update_sir_ages(&mut sir_ages, true, network_structure.ages[first_infection]);
-                update_ct(&mut ct, &network_structure, true, first_infection, scaling,&scale_params);
                 
                 // add info on secondary cases generation and infection from 
                 // to choose secondary case pick randomly with probability based on each persons FOI on i
@@ -257,6 +240,18 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                 network_properties.disease_from[first_infection] = index_case as i64;
                 network_properties.generation[first_infection] = network_properties.generation[index_case] + 1;
                 network_properties.secondary_cases[index_case] += 1;
+                // println!("index case: {:?}\nfirst infection: {:?}", index_case, first_infection);
+                // println!("index case links: {:?}\nfirst infection links: {:?}", network_structure.adjacency_matrix[index_case].iter().map(|x| x.1).collect::<Vec<usize>>(), network_structure.adjacency_matrix[first_infection].iter().map(|x| x.1).collect::<Vec<usize>>());
+                // println!("generations: {:?}, {:?}", network_properties.generation[index_case], network_properties.generation[first_infection]);
+                // println!("\n\nstep\n\n");
+
+                // update SIR and event vecs
+                I_events.push(first_infection as i64);
+                R_events.push(-1);
+                I_cur.push(first_infection);
+                update_sir(&mut sir, true);
+                // update_sir_ages(&mut sir_ages, true, network_structure.ages[first_infection]);
+                update_ct(&mut ct, &network_structure, true, first_infection, scaling,&scale_params);
             }
         }
         // println!("t = \n{:?}",t);
