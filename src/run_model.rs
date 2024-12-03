@@ -136,7 +136,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
         let dtprop = min_r - tt;
         // change in lam in that time
         let lambda = dtprop * beta * ct.clone();
-        let Laprop = &La_t + &lambda;
+        let mut Laprop = &La_t + &lambda;
 
         // println!("min index node = {:?} \nminR = {:?}\n",min_index_node, min_r);
         // println!("dtprop = {:?} \nlambda = \n{:?}\n",dtprop,lambda);
@@ -198,13 +198,14 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                     .unwrap()
                     .to_owned();
                 // time of first infection
-                tt = tt + ((thresholds[first_infection] - La_t[first_infection])/(Laprop[first_infection] - La_t[first_infection]))*dtprop;
-                // set a new La to be used at the start of next iteration
-                let ratio = thresholds[first_infection]/Laprop[first_infection];
+                let ratio = ((thresholds[first_infection] - La_t[first_infection])/(Laprop[first_infection] - La_t[first_infection]));
+                tt = tt + ratio*dtprop;
                 // println!("first infection = {:?}\nratio = {:?}\n", first_infection, ratio);
-                La_t = &La_t + &lambda*ratio;
-                thresholds[first_infection] = -1.;
                 t.push(tt.clone());
+                // set a new La to be used at the start of next iteration
+                // let ratio = thresholds[first_infection]/Laprop[first_infection];
+                thresholds[first_infection] = -1.;
+                La_t = &La_t + &lambda*ratio;
                 // add their recovery time
                 recovery_times.push((first_infection, I_periods[first_infection] + tt));
                 

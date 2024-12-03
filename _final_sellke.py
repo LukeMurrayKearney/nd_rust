@@ -10,12 +10,13 @@ datas = ['comix1','comix2','poly']
 models = ['sbm','dpln']
 scales = ['none', 'none']
 
-taus = [[np.arange(0.001,0.1,0.005), np.arange(0.0001,0.0106,0.001)], 
-        [np.arange(0.001,0.1,0.005), np.arange(0.0001,0.0106,0.001)],
-        [np.arange(0.001,0.1,0.005), np.arange(0.001,0.1,0.005)]]
+taus = [[np.arange(0.001,0.1,0.0025), np.arange(0.001,0.06,0.001)],
+        [np.arange(0.001,0.1,0.0025), np.arange(0.001,0.06,0.001)],
+        [np.arange(0.001,0.1,0.0025), np.arange(0.001,0.1,0.0025)]]
 
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
+        print(data, model)
         contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
         if model == 'sbm':
             params = []
