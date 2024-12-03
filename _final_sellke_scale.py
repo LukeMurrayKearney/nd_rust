@@ -13,6 +13,7 @@ scales = ['fit1', 'fit2']
 taus = [[np.arange(0.001,0.1,0.0025), np.arange(0.001,0.06,0.001)],
         [np.arange(0.001,0.1,0.0025), np.arange(0.001,0.06,0.001)],
         [np.arange(0.001,0.1,0.0025), np.arange(0.001,0.1,0.0025)]]
+taus = [[10*x for x in a] for a in taus]
 
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
