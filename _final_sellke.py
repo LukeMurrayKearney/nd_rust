@@ -15,9 +15,14 @@ scales = ['none', 'none']
 #         [np.arange(0.001,0.1,0.0025), np.arange(0.001,0.06,0.001)],
 #         [np.arange(0.001,0.1,0.0025), np.arange(0.001,0.1,0.0025)]]
 ## 1,2,3,4
-taus = [[np.arange(0.001,0.1,0.005), np.arange(0.001,0.06,0.002)],
-        [np.arange(0.001,0.1,0.005), np.arange(0.001,0.06,0.002)],
-        [np.arange(0.001,0.1,0.005), np.arange(0.001,0.1,0.005)]]
+# taus = [[np.arange(0.001,0.1,0.005), np.arange(0.001,0.06,0.002)],
+#         [np.arange(0.001,0.1,0.005), np.arange(0.001,0.06,0.002)],
+#         [np.arange(0.001,0.1,0.005), np.arange(0.001,0.1,0.005)]]
+# 5
+taus = [[np.arange(0.1,0.205,0.005), np.arange(0.0005,0.01,0.0005)],
+        [np.arange(0.05,0.2,0.01), np.arange(0.0005,0.01,0.0005)],
+        [np.arange(0.001,0.1,0.005), np.arange(0.0025,0.05,0.0025)]]
+
 
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
