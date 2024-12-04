@@ -15,11 +15,11 @@ scales = ['fit1', 'fit2']
 #         [np.arange(0.001,0.1,0.0025), np.arange(0.001,0.06,0.001)],
 #         [np.arange(0.001,0.1,0.0025), np.arange(0.001,0.1,0.0025)]]
 ## 1,2,3,4
-taus = [[np.arange(0.001,0.06,0.002)],
-        [np.arange(0.001,0.06,0.002)],
-        [np.arange(0.001,0.1,0.005)]]
-taus = [[10*x for x in a] for a in taus]
-## 5??
+# taus = [[np.arange(0.001,0.06,0.002)],
+#         [np.arange(0.001,0.06,0.002)],
+#         [np.arange(0.001,0.1,0.005)]]
+# taus = [[10*x for x in a] for a in taus]
+## 5,6
 taus = [[np.arange(0.001,0.07,0.002)],
         [np.arange(0.001,0.07,0.002)],
         [np.arange(0.001,0.05,0.002)]]
@@ -34,6 +34,6 @@ for i, data in enumerate(datas):
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j])
-        with open(f'../output_data/simulations/big/sellke/SIR/5_{data}_{model}_{scales[j]}.json','w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/6_{data}_{model}_{scales[j]}.json','w') as f:
             json.dump(result, f)
 print('done')
