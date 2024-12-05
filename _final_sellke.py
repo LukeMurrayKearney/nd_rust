@@ -28,7 +28,7 @@ scales = ['none', 'none']
 #         [np.arange(0.001,0.1,0.002), np.arange(0.0001,0.04,0.0001)]]
 
 ### long
-## 0,1
+## 0,1,2
 taus = [[np.arange(0.001,0.1,0.005), np.arange(0.001,0.06,0.002)],
         [np.arange(0.001,0.1,0.005), np.arange(0.001,0.06,0.002)],
         [np.arange(0.001,0.1,0.005), np.arange(0.001,0.1,0.005)]]
@@ -42,6 +42,6 @@ for i, data in enumerate(datas):
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=2,iterations=iters, taus=taus[i][j],prop_infec=5/n, scaling=scales[j])
-        with open(f'../output_data/simulations/big/sellke/SIR/1long_{data}_{model}_{scales[j]}.json','w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/2long_{data}_{model}_{scales[j]}.json','w') as f:
             json.dump(result, f)
 print('done')
