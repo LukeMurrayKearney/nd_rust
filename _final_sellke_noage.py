@@ -25,11 +25,15 @@ scales = ['fit1']
 # # taus = [[np.arange(0.001,0.05,0.002)]]
 # taus = [[10*x for x in a] for a in taus]
 ## 1,2
+# taus = [[np.arange(0.001,0.07,0.001)]]
+# taus = [[np.arange(0.001,0.07,0.002)]]
+# taus = [[np.arange(0.001,0.05,0.002)]]
+# taus = [[20*x for x in a] for a in taus]
+## 3
 taus = [[np.arange(0.001,0.07,0.001)]]
 # taus = [[np.arange(0.001,0.07,0.002)]]
 # taus = [[np.arange(0.001,0.05,0.002)]]
-taus = [[20*x for x in a] for a in taus]
-
+taus = [[30*x for x in a] for a in taus]
 
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
@@ -39,7 +43,7 @@ for i, data in enumerate(datas):
             params = []
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j])
-        with open(f'../output_data/simulations/big/sellke/SIR/2_{data}_{model}_{scales[j]}_noage.json','w') as f:
+        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=5/n, scaling=scales[j])
+        with open(f'../output_data/simulations/big/sellke/SIR/3_{data}_{model}_{scales[j]}_noage.json','w') as f:
             json.dump(result, f)
 print('done')
