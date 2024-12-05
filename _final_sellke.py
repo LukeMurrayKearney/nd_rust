@@ -36,7 +36,7 @@ for i, data in enumerate(datas):
             params = []
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=5/n, scaling=scales[j])
-        with open(f'../output_data/simulations/big/sellke/SIR/10_{data}_{model}_{scales[j]}.json','w') as f:
+        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=2,iterations=iters, taus=taus[i][j],prop_infec=5/n, scaling=scales[j])
+        with open(f'../output_data/simulations/big/sellke/SIR/11_{data}_{model}_{scales[j]}.json','w') as f:
             json.dump(result, f)
 print('done')
