@@ -154,8 +154,8 @@ fn big_sellke(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, part
         dict.set_item("r0_23", r023.to_object(py))?;
         dict.set_item("final_size", final_size.to_object(py))?;
         dict.set_item("peak_height", peak_height.to_object(py))?;
-        dict.set_item("t", ts.to_object(py))?;
-        dict.set_item("sir", sirs.to_object(py))?;
+        // dict.set_item("t", ts.to_object(py))?;
+        // dict.set_item("sir", sirs.to_object(py))?;
         
         // Convert dict to PyObject and return
         Ok(dict.into())
