@@ -164,7 +164,7 @@ fn big_sellke(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, part
 
 
 #[pyfunction]
-fn small_sellke(n: usize, adjacency_matrix: Vec<Vec<(usize,usize)>>, ages: Vec<usize>, outbreak_params: Vec<f64>, prop_infec: f64) -> PyResult<Py<PyDict>> {
+fn small_sellke(n: usize, adjacency_matrix: Vec<Vec<(usize,usize)>>, ages: Vec<usize>, outbreak_params: Vec<f64>, prop_infec: f64,scaling: &str) -> PyResult<Py<PyDict>> {
 
     let mut partitions = vec![0; ages.iter().max().unwrap().to_owned()+1];
     for &age in ages.iter() {
@@ -178,7 +178,7 @@ fn small_sellke(n: usize, adjacency_matrix: Vec<Vec<(usize,usize)>>, ages: Vec<u
         partitions: partitions
     };
     let mut properties = network_properties::NetworkProperties::new(&network, &outbreak_params);
-    let (t, I_events, R_events, sir, secondary_cases, generations, infected_by) = run_model::run_sellke(&network, &mut properties.clone(), prop_infec, "none");
+    let (t, I_events, R_events, sir, secondary_cases, generations, infected_by) = run_model::run_sellke(&network, &mut properties.clone(), prop_infec, scaling);
 
     // Initialize the Python interpreter
     Python::with_gil(|py| {

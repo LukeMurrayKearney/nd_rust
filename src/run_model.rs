@@ -98,10 +98,10 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     // define infection periods
     let exp_infectious = Exp::new(1./inv_gamma).unwrap();
     let I_periods: Vec<f64> = (0..n).map(|_| exp_infectious.sample(&mut rng)).collect();
-    // println!("network = \n{:?}", network_structure);
-    // println!("properties = \n{:?}", network_properties);
-    // println!("average infectious period {:?}", I_periods.iter().sum::<f64>()/(I_periods.len() as f64));
-    // println!("I_cur = \n{:?}", I_cur);
+    println!("network = \n{:?}", network_structure);
+    println!("properties = \n{:?}", network_properties);
+    println!("average infectious period {:?}", I_periods.iter().sum::<f64>()/(I_periods.len() as f64));
+    println!("I_cur = \n{:?}", I_cur);
 
     // define thresholds
     let exp_thresh = Exp::new(1.).unwrap();
@@ -124,7 +124,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     // start while loop 
     while I_cur.len() > 0 {
         // get the minimum recovery time
-        // println!("\nlength of R = {:?}", recovery_times.len());
+        println!("\nlength of R = {:?}", recovery_times.len());
         let (min_index_vec, min_index_node, min_r) = recovery_times
             .iter()
             .enumerate()
@@ -138,16 +138,16 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
         let lambda = dtprop * beta * ct.clone();
         let mut Laprop = &La_t + &lambda;
 
-        // println!("min index node = {:?} \nminR = {:?}\n",min_index_node, min_r);
-        // println!("dtprop = {:?} \nlambda = \n{:?}\n",dtprop,lambda);
-        // println!("Laprop = \n{:?}\n",Laprop);
+        println!("min index node = {:?} \nminR = {:?}\n",min_index_node, min_r);
+        println!("dtprop = {:?} \nlambda = \n{:?}\n",dtprop,lambda);
+        println!("Laprop = \n{:?}\n",Laprop);
 
 
         
         // if only recoveries left, S=0
         if sir.last().unwrap()[0] == 0 {
-            // println!("none left\n");
-            // println!("Recovery\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
+            println!("none left\n");
+            println!("Recovery\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
             recovery_times.remove(min_index_vec);
             tt = min_r;
             t.push(min_r);
@@ -166,8 +166,8 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
             // to get correct increase in FOI we need to do these in the right order 
             let mut waiting_infections: Vec<usize> = Vec::new();
             for (i, &threshold) in thresholds.iter().enumerate().filter(|(_,&x)| x>=0.) {
-                // println!("threshold = {threshold}");
-                // println!("i = {i}\n");
+                println!("threshold = {threshold}");
+                println!("i = {i}\n");
                 // infection event 
                 if threshold < Laprop[i] {
                     waiting_infections.push(i);
@@ -175,7 +175,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
             }
             // if no infections pending before recovery
             if waiting_infections.len() == 0 {
-                // println!("Recovery\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
+                println!("Recovery\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
                 // do recovery
                 recovery_times.remove(min_index_vec);
                 tt = min_r.clone();
@@ -190,7 +190,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
             }
             // do infection
             else {
-                // println!("Infection\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
+                println!("Infection\nsum(LA_t) = {:?}\nsum(ct) = {:?}\n",La_t.iter().filter(|&&x| x>=0.).sum::<f64>(), ct.iter().sum::<f64>());
                 // we need to find which threshold would break first, not trivial because of network structure
                 let first_infection = waiting_infections
                     .iter()
@@ -198,9 +198,9 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                     .unwrap()
                     .to_owned();
                 // time of first infection
-                let ratio = ((thresholds[first_infection] - La_t[first_infection])/(Laprop[first_infection] - La_t[first_infection]));
+                let ratio = (thresholds[first_infection] - La_t[first_infection])/(Laprop[first_infection] - La_t[first_infection]);
                 tt = tt + ratio*dtprop;
-                // println!("first infection = {:?}\nratio = {:?}\n", first_infection, ratio);
+                println!("first infection = {:?}\nratio = {:?}\n", first_infection, ratio);
                 t.push(tt.clone());
                 // set a new La to be used at the start of next iteration
                 // let ratio = thresholds[first_infection]/Laprop[first_infection];
@@ -228,23 +228,23 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                         // if neighbour infected
                         if I_events.contains(&(j as i64)) && !R_events.contains(&(j as i64)){
                             let time_infec = tt - t[I_events.iter().position(|&x| x == (j as i64)).unwrap()];
-                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling, &scale_params)
+                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]))
                         }
                         else {
                             return 0.;
                         }
                     })
                     .collect();
-                // println!("contacts: {:?}\nimpacts: {:?}\nI_events: {:?}\nR_events: {:?}",contacts, impacts, I_events, R_events);
+                println!("contacts: {:?}\nimpacts: {:?}\nI_events: {:?}\nR_events: {:?}",contacts, impacts, I_events, R_events);
                 let dist = WeightedIndex::new(&impacts).unwrap();
                 let index_case = contacts[dist.sample(&mut rng)];
                 network_properties.disease_from[first_infection] = index_case as i64;
                 network_properties.generation[first_infection] = network_properties.generation[index_case] + 1;
                 network_properties.secondary_cases[index_case] += 1;
-                // println!("index case: {:?}\nfirst infection: {:?}", index_case, first_infection);
-                // println!("index case links: {:?}\nfirst infection links: {:?}", network_structure.adjacency_matrix[index_case].iter().map(|x| x.1).collect::<Vec<usize>>(), network_structure.adjacency_matrix[first_infection].iter().map(|x| x.1).collect::<Vec<usize>>());
-                // println!("generations: {:?}, {:?}", network_properties.generation[index_case], network_properties.generation[first_infection]);
-                // println!("\n\nstep\n\n");
+                println!("index case: {:?}\nfirst infection: {:?}", index_case, first_infection);
+                println!("index case links: {:?}\nfirst infection links: {:?}", network_structure.adjacency_matrix[index_case].iter().map(|x| x.1).collect::<Vec<usize>>(), network_structure.adjacency_matrix[first_infection].iter().map(|x| x.1).collect::<Vec<usize>>());
+                println!("generations: {:?}, {:?}", network_properties.generation[index_case], network_properties.generation[first_infection]);
+                println!("\n\nstep\n\n");
 
                 // update SIR and event vecs
                 I_events.push(first_infection as i64);
@@ -255,31 +255,32 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                 update_ct(&mut ct, &network_structure, true, first_infection, scaling,&scale_params);
             }
         }
-        // println!("t = \n{:?}",t);
-        // println!("\n\nstep\n\n");
+        println!("t = \n{:?}",t);
+        println!("\n\nstep\n\n");
     }
-    // println!("I_cur = {:?}\nI_events = {:?}\nR_events = {:?}\n", I_cur, I_events, R_events);
-    // println!("t = {:?}",t);
-    // println!("{:?}", sir.last().unwrap());
+    println!("I_cur = {:?}\nI_events = {:?}\nR_events = {:?}\n", I_cur, I_events, R_events);
+    println!("t = {:?}",t);
+    println!("{:?}", sir.last().unwrap());
     (t, I_events, R_events, sir, network_properties.secondary_cases.clone(), network_properties.generation.clone(), network_properties.disease_from.clone())
 }
 
-fn single_FOI(degrees: (usize,usize), scaling: &str, scale_params: &ScaleParams) -> f64 {
-    match scaling {
-        "fit1" => {
-            let k = cmp::max(degrees.0, degrees.1);
-            // change in c for this link scaled
-            1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
-        }
-        "fit2" => {
-            let k = cmp::max(degrees.0, degrees.1);
-            // change in c for this link scaled
-            1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
-        }
-        _ => {
-            1.
-        }
-    }
+fn single_FOI(degrees: (usize,usize)) -> f64 {
+    1.
+    // match scaling {
+    //     "fit1" => {
+    //         let k = cmp::max(degrees.0, degrees.1);
+    //         // change in c for this link scaled
+    //         1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
+    //     }
+    //     "fit2" => {
+    //         let k = cmp::max(degrees.0, degrees.1);
+    //         // change in c for this link scaled
+    //         1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
+    //     }
+    //     _ => {
+    //         1.
+    //     }
+    // }
 }
 
 fn update_ct(ct: &mut Array1<f64>, network: &NetworkStructure, infection: bool, i: usize, scaling: &str, scale_params: &ScaleParams) {
