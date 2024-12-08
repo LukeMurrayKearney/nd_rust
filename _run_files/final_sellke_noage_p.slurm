@@ -14,4 +14,4 @@ maturin develop --release
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-python _final_sellke_noage.py
+python _final_sellke_noage_p.py
