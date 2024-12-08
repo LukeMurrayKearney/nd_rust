@@ -162,6 +162,67 @@ fn big_sellke(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, part
     })
 }
 
+#[pyfunction]
+fn big_sellke_growth_rate(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
+
+    let (mut r01, mut r023, mut final_size, mut peak_height) = (vec![vec![0.; networks*iterations]; taus.len()], vec![vec![0.; networks*iterations]; taus.len()], vec![vec![0; networks*iterations]; taus.len()], vec![vec![0; networks*iterations]; taus.len()]); 
+    let (mut ts, mut sirs) = (Vec::new(), Vec::new());
+    // parallel simulations
+
+    for (i, &tau) in taus.iter().enumerate() {
+        println!("{i}");
+        let mut cur_params = outbreak_params.clone();
+        cur_params[0] = tau;
+        for j in 0..networks {
+            let network: network_structure::NetworkStructure = match dist_type { 
+                "sbm" => {
+                    network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
+                },
+                _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
+            };
+            let properties = network_properties::NetworkProperties::new(&network, &cur_params);
+
+            let results: Vec<(f64, f64, i64, i64, Vec<f64>, Vec<Vec<usize>>)>
+                = (0..iterations)
+                    .into_par_iter()
+                    .map(|_| {
+                        let (t,_,_,sir,sec_cases,geners, _) = run_model::run_sellke(&network, &mut properties.clone(), prop_infec, scaling);
+                        if geners.iter().max().unwrap().to_owned() < 3 {
+                            (-1.,-1.,-1,-1, t,sir)
+                        }
+                        else {
+                            let gen1 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 1).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen23 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 2 || geners[i.to_owned()] == 3).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            ((gen1.iter().sum::<usize>() as f64) / (gen1.len() as f64),(gen23.iter().sum::<usize>() as f64) / (gen23.len() as f64), sir.last().unwrap()[2] as i64, sir.iter().filter_map(|x| x.get(1)).max().unwrap().to_owned() as i64, t, sir)
+                            // let gen23 = geners.iter().filter(|&&x| x == 2 || x == 3).collect::<Vec<&usize>>().len();
+                            // let gen34 = geners.iter().filter(|&&x| x == 3 || x == 4).collect::<Vec<&usize>>().len();
+                            // ((gen34 as f64)/(gen23 as f64), sir.last().unwrap()[2] as i64, sir.iter().filter_map(|x| x.get(1)).max().unwrap().to_owned() as i64)
+                        }
+                    })
+                    .collect();
+            for (k, sim) in results.iter().enumerate() {
+                r01[i][j*iterations + k] = sim.0; r023[i][j*iterations + k] = sim.1; final_size[i][j*iterations + k] = sim.2; peak_height[i][j*iterations + k] = sim.3;
+                ts.push(sim.4.clone()); sirs.push(sim.5.iter().enumerate().filter(|(index, _)| sim.4[index.to_owned()] < 14.).map(|(_, sir)| sir[1]).collect::<Vec<usize>>());
+            }
+        }
+    }
+    
+    // Initialize the Python interpreter
+    Python::with_gil(|py| {
+        // Create output PyDict
+        let dict = PyDict::new_bound(py);
+        
+        dict.set_item("r0_1", r01.to_object(py))?;
+        dict.set_item("r0_23", r023.to_object(py))?;
+        dict.set_item("final_size", final_size.to_object(py))?;
+        dict.set_item("peak_height", peak_height.to_object(py))?;
+        dict.set_item("t", ts.to_object(py))?;
+        dict.set_item("sir", sirs.to_object(py))?;
+        
+        // Convert dict to PyObject and return
+        Ok(dict.into())
+    })
+}
 
 #[pyfunction]
 fn small_sellke(n: usize, adjacency_matrix: Vec<Vec<(usize,usize)>>, ages: Vec<usize>, outbreak_params: Vec<f64>, prop_infec: f64,scaling: &str) -> PyResult<Py<PyDict>> {
@@ -484,5 +545,6 @@ fn nd_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(fit_dpln, m)?)?;
     m.add_function(wrap_pyfunction!(small_sellke, m)?)?;
     m.add_function(wrap_pyfunction!(big_sellke, m)?)?;
+    m.add_function(wrap_pyfunction!(big_sellke_growth_rate, m)?)?;
     Ok(())
 }
