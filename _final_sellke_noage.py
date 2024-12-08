@@ -43,11 +43,12 @@ taus = [[np.arange(0.5,20,0.25)]]
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
         print(data, model)
-        contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
-        if model == 'sbm':
-            params = []
-        else:
-            params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
+        # contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
+        # if model == 'sbm':
+        #     params = []
+        # else:
+        #     params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
+        _, contact_matrix, params = nd_p.fit_to_data(f'input_data/{data}.csv',dist_type=model, buckets=buckets, save_fig=False)
         result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=5/n, scaling=scales[j])
         with open(f'../output_data/simulations/big/sellke/SIR/7_{data}_{model}_{scales[j]}_noage.json','w') as f:
             json.dump(result, f)

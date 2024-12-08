@@ -228,7 +228,7 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
                         // if neighbour infected
                         if I_events.contains(&(j as i64)) && !R_events.contains(&(j as i64)){
                             let time_infec = tt - t[I_events.iter().position(|&x| x == (j as i64)).unwrap()];
-                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]))
+                            return single_FOI((network_structure.degrees[first_infection], network_structure.degrees[j]), scaling, &scale_params)
                         }
                         else {
                             return 0.;
@@ -264,23 +264,22 @@ pub fn run_sellke(network_structure: &NetworkStructure, network_properties: &mut
     (t, I_events, R_events, sir, network_properties.secondary_cases.clone(), network_properties.generation.clone(), network_properties.disease_from.clone())
 }
 
-fn single_FOI(degrees: (usize,usize)) -> f64 {
-    1.
-    // match scaling {
-    //     "fit1" => {
-    //         let k = cmp::max(degrees.0, degrees.1);
-    //         // change in c for this link scaled
-    //         1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
-    //     }
-    //     "fit2" => {
-    //         let k = cmp::max(degrees.0, degrees.1);
-    //         // change in c for this link scaled
-    //         1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
-    //     }
-    //     _ => {
-    //         1.
-    //     }
-    // }
+fn single_FOI(degrees: (usize,usize), scaling: &str, scale_params: &ScaleParams) -> f64 {
+    match scaling {
+        "fit1" => {
+            let k = cmp::max(degrees.0, degrees.1);
+            // change in c for this link scaled
+            1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
+        }
+        "fit2" => {
+            let k = cmp::max(degrees.0, degrees.1);
+            // change in c for this link scaled
+            1. * (scale_fit(&scale_params, k as f64) / scale_fit(&scale_params, 1.))
+        }
+        _ => {
+            1.
+        }
+    }
 }
 
 fn update_ct(ct: &mut Array1<f64>, network: &NetworkStructure, infection: bool, i: usize, scaling: &str, scale_params: &ScaleParams) {
