@@ -24,7 +24,7 @@ for i, data in enumerate(datas):
             params = []
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-        result = nd_p.sellke_sims_growth_rate(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=5,iterations=iters/4, taus=taus[i][j],prop_infec=5/n, scaling=scales[j])
+        result = nd_p.sellke_sims_growth_rate(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=5,iterations=int(iters/4), taus=taus[i][j],prop_infec=5/n, scaling=scales[j])
         with open(f'../output_data/simulations/big/sellke/growth_rate/0_{data}_{model}.json','w') as f:
             json.dump(result, f)
 print('done')
