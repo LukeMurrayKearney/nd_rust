@@ -19,6 +19,10 @@ taus = [[np.arange(0.01,0.11,0.01)],
 taus = [[np.arange(0.11,0.21,0.01)],
         [np.arange(0.11,0.21,0.01)],
         [np.arange(0.11,0.21,0.01)]]
+## 6,7
+taus = [[np.arange(0.21,0.31,0.01)],
+        [np.arange(0.21,0.31,0.01)],
+        [np.arange(0.21,0.31,0.01)]]
 
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
@@ -29,6 +33,6 @@ for i, data in enumerate(datas):
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         result = nd_p.sellke_sims_growth_rate(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=5/n, scaling=scales[j])
-        with open(f'../output_data/simulations/big/sellke/growth_rate/5_{data}_{model}.json','w') as f:
+        with open(f'../output_data/simulations/big/sellke/growth_rate/6_{data}_{model}.json','w') as f:
             json.dump(result, f)
 print('done')
