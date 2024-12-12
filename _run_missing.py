@@ -8,7 +8,7 @@ partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.8
 
 datas = ['comix1','comix2','poly']
 models = ['sbm','dpln']
-scales = ['none']
+scales = ['none','none']
 
 for sim_num in [0,1,2,10,11,12,13,14,15,16,17,18,19]:
     if sim_num == 0:
