@@ -14,4 +14,4 @@ maturin develop --release
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-python _reduce_filesize.py
+python _run_missing.py
