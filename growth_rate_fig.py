@@ -33,8 +33,9 @@ digit = [a for a in bins]; digit.append(1e6)
 t_0 = 6
 T_max = 14
 max_gr, max_gr1 = 0, 0
-xs,ys = [], []
 for i, data in enumerate(datas):
+    xs,ys = [], []
+    top, bot = [], []
     # fig0,ax0 = plt.subplots(1,1,figsize=(12,10))
     # fig1,ax1 = plt.subplots(1,1,figsize=(12,10))
     # fig2,ax2 = plt.subplots(1,1,figsize=(12,10))
@@ -138,6 +139,8 @@ for i, data in enumerate(datas):
             print('y\n\n\n')
             xs.append(x)
             ys.append([np.mean(a) for a in y])
+            bot.append([np.percentile(a,5) for a in y])
+            top.append([np.percentile(a,95) for a in y])
             print(index)
             print(ys)
             # # ax2.scatter(r0s, [np.mean([a[f'{T}']]) for a in g], color = available_colors[index], label=f'{index}')
@@ -191,5 +194,7 @@ for i, data in enumerate(datas):
     # ax4.legend()
     # # fig3.show() 
 
-np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}_t0=6.csv', xs)
-np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}_t0=6.csv',ys)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}_t6.csv', xs)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}_t6.csv',ys)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/bot_{data}_{model}_t6.csv',bot)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/top_{data}_{model}_t6.csv',top)
