@@ -30,8 +30,8 @@ top, step = 4, 0.1
 bins = np.arange(step, top + step, step)
 bin_centers = np.array([a/2 if i == 0 else a - (a - bins[i-1])/2 for i,a in enumerate(bins)])
 digit = [a for a in bins]; digit.append(1e6)
-t_0 = 0
-T_max = 7
+t_0 = 6
+T_max = 14
 max_gr, max_gr1 = 0, 0
 xs,ys = [], []
 for i, data in enumerate(datas):
@@ -46,7 +46,7 @@ for i, data in enumerate(datas):
         gr, gr1 = [], []
         r0s = []
         tau_res = []
-        for sim_num in range(8):
+        for sim_num in range(10):
             try:
                 with open(f'../output_data/simulations/big/sellke/growth_rate/{sim_num}_{data}_{model}.json','r') as f:
                     tmp = json.load(f)
@@ -82,6 +82,11 @@ for i, data in enumerate(datas):
                         taus = [[np.arange(0.21,0.31,0.01)],
                                 [np.arange(0.21,0.31,0.01)],
                                 [np.arange(0.21,0.31,0.01)]]
+                    if sim_num > 7:
+                        # 8,9
+                        taus = [[np.arange(0.01,0.31,0.01)],
+                                [np.arange(0.01,0.31,0.01)],
+                                [np.arange(0.01,0.31,0.01)]]
                     tmp_gr, tmp_gr1 = [], []
                     for T in range(t_0+1,T_max + 1):
                         Is = [[b for idx_t,b in enumerate(a) if t[idx_sim][idx_t] > t_0 and t[idx_sim][idx_t] < T] for idx_sim, a in enumerate(I)]
@@ -186,5 +191,5 @@ for i, data in enumerate(datas):
     # ax4.legend()
     # # fig3.show() 
 
-np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}.csv', xs)
-np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}.csv',ys)
+np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}_t0=6.csv', xs)
+np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}_t0=6.csv',ys)
