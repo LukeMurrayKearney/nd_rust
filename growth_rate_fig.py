@@ -26,21 +26,16 @@ available_colors = [
 
 
 # bins 
-top, step = 4, 0.1
+top, step = 5, 0.1
 bins = np.arange(step, top + step, step)
 bin_centers = np.array([a/2 if i == 0 else a - (a - bins[i-1])/2 for i,a in enumerate(bins)])
 digit = [a for a in bins]; digit.append(1e6)
-t_0 = 6
+t_0 = 3
 T_max = 14
 max_gr, max_gr1 = 0, 0
 for i, data in enumerate(datas):
     xs,ys = [], []
     top, bot = [], []
-    # fig0,ax0 = plt.subplots(1,1,figsize=(12,10))
-    # fig1,ax1 = plt.subplots(1,1,figsize=(12,10))
-    # fig2,ax2 = plt.subplots(1,1,figsize=(12,10))
-    # fig3,ax3 = plt.subplots(1,1,figsize=(12,10))
-    # fig4,ax4 = plt.subplots(1,1,figsize=(12,10))
     
     for j, model in enumerate(models):
         fs, ps = [[] for _ in bins], [[] for _ in bins]
@@ -131,70 +126,17 @@ for i, data in enumerate(datas):
                 if bin_idx < len(y):
                     for val in g[f'{T}']:
                         y[bin_idx].append(val)
-            # cur_max = max([np.mean(a) if len(a) else 0 for a in y])
-            # if max_gr < cur_max:
-            #     max_gr = cur_max
-            # ax3.plot(x,[np.mean(a) for a in y], color=available_colors[index], label=f'{index}')
-            print(y)
+            
+            # print(y)
             print('y\n\n\n')
             xs.append(x)
             ys.append([np.mean(a) for a in y])
             bot.append([np.percentile(a,5) if len(a) > 1 else 0 for a in y])
             top.append([np.percentile(a,95) if len(a) > 1 else 0 for a in y])
             print(index)
-            print(ys)
-            # # ax2.scatter(r0s, [np.mean([a[f'{T}']]) for a in g], color = available_colors[index], label=f'{index}')
-            # for index1, g in enumerate(gr1):    
-            #     bin_idx = np.digitize(r0s[index1], digit, right=False)
-            #     if bin_idx < len(y1):
-            #         for val in g[f'{T}']:
-            #             y1[bin_idx].append(val)
-            # cur_max = max([np.mean(a) if len(a) else 0 for a in y])
-            # if max_gr1 < cur_max:
-            #     max_gr1 = cur_max
-            # # ax4.plot(x,[np.mean(a) for a in y1], color=available_colors[index], label=f'{index}')
-                
-        ############################### fig 3 we need to do lines ##################
-                        
-    # ax0.set_title(f'{data_names[i]}')
-    # ax0.set_ylabel('Growth Rate')
-    # ax0.set_xlabel('Tau')
-    # ax0.grid()
-    # ax0.legend()
-    # # fig0.show()
-    
-    # ax1.set_title(f'{data_names[i]}')
-    # ax1.set_ylabel('R_0')
-    # ax1.set_xlabel('Tau')
-    # ax1.legend()
-    # # fig1.show()
-    
-    # ax2.set_title(f'{data_names[i]}')
-    # ax2.set_ylabel('Growth Rate')
-    # ax2.set_xlabel('R_0')
-    # ax2.legend()
-    # # fig2.show() 
-    
-    # ax3.plot([1,4],[0,max_gr], 'k')
-    # ax3.set_title(f'{data_names[i]}')
-    # ax3.set_ylabel('Growth Rate')
-    # ax3.set_xlabel('R_0')
-    # ax3.set_xlim([1,4])
-    # ax3.set_ylim([0, max_gr])
-    # ax3.legend()
-    # fig3.savefig(f'figures/{data}_gr_r0')
-    # fig3.show() 
-    
-    # ax4.plot([1,4],[0,max_gr1], 'k')
-    # ax4.set_title(f'{data_names[i]}')
-    # ax4.set_ylabel('Growth Rate')
-    # ax4.set_xlabel('R_0')
-    # ax4.set_xlim([1,4])
-    # ax4.set_ylim([0, max_gr1])
-    # ax4.legend()
-    # # fig3.show() 
-
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}_t6.csv', xs)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}_t6.csv',ys)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/bot_{data}_{model}_t6.csv',bot)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/top_{data}_{model}_t6.csv',top)
+            # print(ys)
+            
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}_t3.csv', xs)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}_t3.csv',ys)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/bot_{data}_{model}_t3.csv',bot)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/top_{data}_{model}_t3.csv',top)
