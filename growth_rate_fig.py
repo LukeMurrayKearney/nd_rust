@@ -30,7 +30,7 @@ top, step = 5, 0.1
 bins = np.arange(step, top + step, step)
 bin_centers = np.array([a/2 if i == 0 else a - (a - bins[i-1])/2 for i,a in enumerate(bins)])
 digit = [a for a in bins]; digit.append(1e6)
-t_0 = 3
+t_0 = 0
 T_max = 14
 max_gr, max_gr1 = 0, 0
 for i, data in enumerate(datas):
@@ -136,7 +136,7 @@ for i, data in enumerate(datas):
             print(index)
             # print(ys)
             
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}_t3.csv', xs)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}_t3.csv',ys)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/bot_{data}_{model}_t3.csv',bot)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/top_{data}_{model}_t3.csv',top)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}.csv', xs)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}.csv',ys)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/bot_{data}_{model}.csv',bot)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/top_{data}_{model}.csv',top)
