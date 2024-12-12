@@ -14,4 +14,4 @@ maturin develop --release
 
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
-python growth_rate_fig.py
+python _growth_rate.py
