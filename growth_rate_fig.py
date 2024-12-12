@@ -7,7 +7,7 @@ plt.rcParams.update({'font.size': 22})
 n = 100_000
 partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.866*n, n]
 
-datas = ['comix2']
+datas = ['comix1','comix2','poly']
 # datas = ['poly']
 data_names = ['CoMix 1', 'CoMix 2', 'POLYMOD']
 models = ['sbm']
