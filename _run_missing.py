@@ -10,7 +10,8 @@ datas = ['comix1','comix2','poly']
 models = ['sbm','dpln']
 scales = ['none','none']
 
-for sim_num in [0,1,2,10,11,12,13,14,15,16,17,18,19]:
+for sim_num in [0,1,2,11,12]:
+    print(sim_num)
     if sim_num == 0:
         ## 0
         taus = [[np.arange(0.001,0.1,0.0025), np.arange(0.001,0.06,0.001)],
@@ -45,7 +46,7 @@ for sim_num in [0,1,2,10,11,12,13,14,15,16,17,18,19]:
     for i, data in enumerate(datas):
         if data == 'poly':
             for j, model in enumerate(models):
-                if model == 'dpln':
+                if model == 'sbm':
                     print(data, model)
                     contact_matrix = np.genfromtxt(f'input_data/contact_matrices/contact_matrix_{data}.csv', delimiter=',')
                     if model == 'sbm':
