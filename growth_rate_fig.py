@@ -90,8 +90,8 @@ for i, data in enumerate(datas):
                         for vec in Is:
                             # ( log(I(t+T)) - log(I(t)) ) / T
                             if len(vec) > 1:
-                                growth_rates.append((np.log(vec[-1]) - np.log(vec[0])) / T)
-                                # growth_rates1.append((vec[-1] - vec[0]) / T)
+                                # growth_rates.append((np.log(vec[-1]) - np.log(vec[0])) / T)
+                                growth_rates.append((vec[-1] - vec[0]) / T)
                             else:
                                 growth_rates.append(0)
                                 # growth_rates1.append(0)
@@ -136,7 +136,7 @@ for i, data in enumerate(datas):
             print(index)
             # print(ys)
             
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}.csv', xs)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}.csv',ys)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/bot_{data}_{model}.csv',bot)
-    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/top_{data}_{model}.csv',top)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/xs_{data}_{model}_nl.csv', xs)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/ys_{data}_{model}_nl.csv',ys)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/bot_{data}_{model}_nl.csv',bot)
+    np.savetxt(f'../output_data/simulations/big/sellke/growth_rate/figures/top_{data}_{model}_nl.csv',top)
