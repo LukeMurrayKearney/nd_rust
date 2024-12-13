@@ -34,7 +34,7 @@ t_0 = 0
 T_max = 14
 max_gr, max_gr1 = 0, 0
 for i, data in enumerate(datas):
-    if data == 'poly':
+    if data != 'poly':
         xs,ys = [], []
         top, bot = [], []
         
