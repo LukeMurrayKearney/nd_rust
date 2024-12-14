@@ -31,11 +31,11 @@ scales = ['fit1']
 # taus = [[np.arange(0.001,0.05,0.002)]]
 # taus = [[20*x for x in a] for a in taus]
 ## 4,5
-taus = [[np.arange(0.005,0.4,0.005)]]
+# taus = [[np.arange(0.005,0.4,0.005)]]
 # taus = [[np.arange(0.001,0.07,0.002)]]
 # taus = [[np.arange(0.001,0.05,0.002)]]
 ## 6,7
-# taus = [[np.arange(0.4,0.6005,0.005)]]
+taus = [[np.arange(0.4,0.605,0.005)]]
 # taus = [[np.arange(0.07,0.09,0.002)]]
 # taus = [[np.arange(0.05,0.09,0.002)]]
 
