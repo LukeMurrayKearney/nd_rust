@@ -36,11 +36,11 @@ scales = ['fit1']
 # taus = [[np.arange(0.001,0.05,0.002)]]
 ## 6,7
 # taus = [[np.arange(0.4,0.605,0.005)]]
-taus = [[np.arange(0.07,0.09,0.002)]]
+# taus = [[np.arange(0.07,0.09,0.002)]]
 # taus = [[np.arange(0.05,0.09,0.002)]]
 ## 8,9
 # taus = [[np.arange(0.005,0.205,0.005)]]
-# taus = [[np.arange(0.001,0.02,0.002)]]
+taus = [[np.arange(0.001,0.02,0.002)]]
 # taus = [[np.arange(0.001,0.04,0.002)]]
 
 
