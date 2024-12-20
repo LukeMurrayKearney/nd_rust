@@ -102,7 +102,7 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, network_params
 #[pyfunction]
 fn big_sellke_sec_cases(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
 
-    let (mut r01, mut secondary_cases: Vec<Vec<f64>>) = (vec![vec![0.; networks*iterations]; taus.len()], vec![Vec:new(); taus.len()]); 
+    let (mut r01, mut secondary_cases) = (vec![vec![0.; networks*iterations]; taus.len()], vec![Vec:new(); taus.len()]); 
     // let (mut ts, mut sirs) = (Vec::new(), Vec::new());
     // parallel simulations
 
