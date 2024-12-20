@@ -15,11 +15,13 @@ from scipy.optimize import minimize
 plt.rcParams.update({'font.size': 14})  # Adjust the font size
 
 ################################## build into a package ##################################
-def big_sellke_sims(partitions, contact_matrix, taus=np.arange(0.1,1,0.1), num_networks=5, iterations=10, network_params=None, n=100_000, dist_type='nbinom', inv_gamma=7, prop_infec=1e-3, scaling="None"):
+def big_sellke_sims(partitions, contact_matrix, taus=np.arange(0.1,1,0.1), num_networks=5, iterations=10, network_params=None, n=100_000, dist_type='nbinom', inv_gamma=7, prop_infec=1e-3, scaling="None", secondary_cases=False):
     partitions = [int(a) for a in partitions]
     outbreak_params = [0,inv_gamma]
-    
-    return nd_r.big_sellke(taus, num_networks, iterations, n, partitions, dist_type, network_params, contact_matrix, outbreak_params, prop_infec, scaling)
+    if secondary_cases:
+        return nd_r.big_sellke_sec_cases(taus, num_networks, iterations, n, partitions, dist_type, network_params, contact_matrix, outbreak_params, prop_infec, scaling)
+    else:
+        return nd_r.big_sellke(taus, num_networks, iterations, n, partitions, dist_type, network_params, contact_matrix, outbreak_params, prop_infec, scaling)
 
 def sellke_sims_growth_rate(partitions, contact_matrix, taus=np.arange(0.1,1,0.1), num_networks=5, iterations=10, network_params=None, n=100_000, dist_type='nbinom', inv_gamma=7, prop_infec=1e-3, scaling="None"):
     partitions = [int(a) for a in partitions]

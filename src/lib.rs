@@ -99,12 +99,69 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, network_params
 
 //////////////////////////////////////////// outbreak simulation //////////////////////////////////////
 
+#[pyfunction]
+fn big_sellke_sec_cases(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
+
+    let (mut r01, mut secondary_cases: Vec<Vec<f64>>) = (vec![vec![0.; networks*iterations]; taus.len()], vec![Vec:new(); taus.len()]); 
+    // let (mut ts, mut sirs) = (Vec::new(), Vec::new());
+    // parallel simulations
+
+    for (i, &tau) in taus.iter().enumerate() {
+        println!("{i}");
+        let mut cur_params = outbreak_params.clone();
+        cur_params[0] = tau;
+        for j in 0..networks {
+            let network: network_structure::NetworkStructure = match dist_type { 
+                "sbm" => {
+                    network_structure::NetworkStructure::new_sbm_from_vars(n, &partitions, &contact_matrix)
+                },
+                _ => network_structure::NetworkStructure::new_mult_from_input(n, &partitions, dist_type, &network_params, &contact_matrix)
+            };
+            let properties = network_properties::NetworkProperties::new(&network, &cur_params);
+
+            let results: Vec<(f64, Vec<usize>)>
+                = (0..iterations)
+                    .into_par_iter()
+                    .map(|_| {
+                        let (t,_,_,sir,sec_cases,geners, _) = run_model::run_sellke(&network, &mut properties.clone(), prop_infec, scaling);
+                        if geners.iter().max().unwrap().to_owned() <= 3 {
+                            (-1.,Vec::new())
+                        }
+                        else {
+                            let gen1 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 1).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            // let gen23 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 2 || geners[i.to_owned()] == 3).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            ((gen1.iter().sum::<usize>() as f64) / (gen1.len() as f64), gen1)
+                        }
+                    })
+                    .collect();
+            for (k, sim) in results.iter().enumerate() {
+                r01[i][j*iterations + k] = sim.0; 
+                for val in sim.1.iter() {
+                    secondary_cases[i].push(val.to_owned);
+                }
+            }
+        }
+    }
+    
+    // Initialize the Python interpreter
+    Python::with_gil(|py| {
+        // Create output PyDict
+        let dict = PyDict::new_bound(py);
+        
+        dict.set_item("r0_1", r01.to_object(py))?;
+        dict.set_item("secondary_cases", secondary_cases.to_object(py))?;
+        
+        // Convert dict to PyObject and return
+        Ok(dict.into())
+    })
+}
+
 
 #[pyfunction]
 fn big_sellke(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
 
     let (mut r01, mut r023, mut final_size, mut peak_height) = (vec![vec![0.; networks*iterations]; taus.len()], vec![vec![0.; networks*iterations]; taus.len()], vec![vec![0; networks*iterations]; taus.len()], vec![vec![0; networks*iterations]; taus.len()]); 
-    let (mut ts, mut sirs) = (Vec::new(), Vec::new());
+    // let (mut ts, mut sirs) = (Vec::new(), Vec::new());
     // parallel simulations
 
     for (i, &tau) in taus.iter().enumerate() {
@@ -140,7 +197,7 @@ fn big_sellke(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, part
                     .collect();
             for (k, sim) in results.iter().enumerate() {
                 r01[i][j*iterations + k] = sim.0; r023[i][j*iterations + k] = sim.1; final_size[i][j*iterations + k] = sim.2; peak_height[i][j*iterations + k] = sim.3;
-                ts.push(sim.4.clone()); sirs.push(sim.5.iter().map(|sir| sir[1]).collect::<Vec<usize>>());
+                // ts.push(sim.4.clone()); sirs.push(sim.5.iter().map(|sir| sir[1]).collect::<Vec<usize>>());
             }
         }
     }
@@ -546,5 +603,6 @@ fn nd_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(small_sellke, m)?)?;
     m.add_function(wrap_pyfunction!(big_sellke, m)?)?;
     m.add_function(wrap_pyfunction!(big_sellke_growth_rate, m)?)?;
+    m.add_function(wrap_pyfunction!(big_sellke_sec_cases, m)?)?;
     Ok(())
 }
