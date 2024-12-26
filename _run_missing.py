@@ -10,7 +10,7 @@ datas = ['comix1','comix2','poly']
 models = ['sbm','dpln']
 scales = ['none','none']
 
-for sim_num in [0,1]:
+for sim_num in [10,11,12,13,14,15,16]:
     print(sim_num)
     if sim_num == 0:
         ## 0
