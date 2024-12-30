@@ -25,6 +25,6 @@ for i, data in enumerate(datas):
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=3,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j],secondary_cases=True)
-        with open(f'../output_data/simulations/big/sellke/SIR/2_{data}_{model}_{scales[j]}_sc.json','w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/3_{data}_{model}_{scales[j]}_sc.json','w') as f:
             json.dump(result, f)
 print('done')
