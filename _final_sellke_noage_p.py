@@ -61,14 +61,14 @@ for i, data in enumerate(datas):
         #     params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         df = pd.read_csv(f'input_data/{data}.csv')
         _, contact_matrix, params = nd_p.fit_to_data(df=df,dist_type=model, buckets=buckets, save_fig=False)
-        result = {'zeros': [], 'avg_degree': [], 'max_degree': []}
-        for _ in range(100):
-            network = nd_p.build_network(n, partitions, contact_matrix, params=params, dist_type=model)
-            result['zeros'].append(len([a for a in network['degrees'] if a == 0]))
-            result['avg_degree'].append(np.mean([a for a in network['degrees']]))
-            result['max_degree'].append(max([a for a in network['degrees']]))
+        # result = {'zeros': [], 'avg_degree': [], 'max_degree': []}
+        # for _ in range(100):
+        #     network = nd_p.build_network(n, partitions, contact_matrix, params=params, dist_type=model)
+        #     result['zeros'].append(len([a for a in network['degrees'] if a == 0]))
+        #     result['avg_degree'].append(np.mean([a for a in network['degrees']]))
+        #     result['max_degree'].append(max([a for a in network['degrees']]))
             
-        # result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j])
-        with open(f'../output_data/simulations/big/sellke/SIR/networks_{data}_{model}_{scales[j]}_noage.json','w') as f:
+        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j])
+        with open(f'../output_data/simulations/big/sellke/SIR/25_{data}_{model}_{scales[j]}_noage.json','w') as f:
             json.dump(result, f)
 print('done')
