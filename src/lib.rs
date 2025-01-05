@@ -102,7 +102,9 @@ fn test_r0_fit(n: usize, partitions: Vec<usize>, dist_type: &str, network_params
 #[pyfunction]
 fn big_sellke_sec_cases(taus: Vec<f64>, networks: usize, iterations: usize, n: usize, partitions: Vec<usize>, dist_type: &str, network_params: Vec<Vec<f64>>, contact_matrix: Vec<Vec<f64>>, outbreak_params: Vec<f64>, prop_infec: f64, scaling: &str) -> PyResult<Py<PyDict>> {
 
-    let (mut r01, mut secondary_cases) = (vec![vec![0.; networks*iterations]; taus.len()], vec![Vec::new(); taus.len()]); 
+    let (mut r01, mut sc1, mut sc2, mut sc3, mut sc4, mut sc5, mut sc6, mut sc7, mut sc8, mut sc9, mut sc10) = (vec![vec![0.; networks*iterations]; taus.len()], vec![Vec::new(); taus.len()], vec![Vec::new(); taus.len()], 
+        vec![Vec::new(); taus.len()], vec![Vec::new(); taus.len()], vec![Vec::new(); taus.len()], vec![Vec::new(); taus.len()], 
+        vec![Vec::new(); taus.len()], vec![Vec::new(); taus.len()], vec![Vec::new(); taus.len()], vec![Vec::new(); taus.len()]); 
     // let (mut ts, mut sirs) = (Vec::new(), Vec::new());
     // parallel simulations
 
@@ -119,26 +121,43 @@ fn big_sellke_sec_cases(taus: Vec<f64>, networks: usize, iterations: usize, n: u
             };
             let properties = network_properties::NetworkProperties::new(&network, &cur_params);
 
-            let results: Vec<(f64, Vec<usize>)>
+            let results: Vec<(f64, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>, Vec<usize>)>
                 = (0..iterations)
                     .into_par_iter()
                     .map(|_| {
                         let (t,_,_,sir,sec_cases,geners, _) = run_model::run_sellke(&network, &mut properties.clone(), prop_infec, scaling);
                         if geners.iter().max().unwrap().to_owned() <= 3 {
-                            (-1.,Vec::new())
+                            (-1.,Vec::new(),Vec::new(),Vec::new(),Vec::new(),Vec::new(),Vec::new(),Vec::new(),Vec::new(),Vec::new(),Vec::new())
                         }
                         else {
                             let gen1 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 1).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen2 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 2).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen3 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 3).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen4 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 4).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen5 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 5).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen6 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 6).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen7 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 7).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen8 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 8).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen9 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 9).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            let gen10 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 10).map(|(_,&x)| x).collect::<Vec<usize>>();
+                            
                             // let gen23 = sec_cases.iter().enumerate().filter(|(i,_)| geners[i.to_owned()] == 2 || geners[i.to_owned()] == 3).map(|(_,&x)| x).collect::<Vec<usize>>();
-                            ((gen1.iter().sum::<usize>() as f64) / (gen1.len() as f64), gen1)
+                            ((gen1.iter().sum::<usize>() as f64) / (gen1.len() as f64), gen1, gen2, gen3, gen4, gen5, gen6, gen7, gen8, gen9, gen10)
                         }
                     })
                     .collect();
             for (k, sim) in results.iter().enumerate() {
                 r01[i][j*iterations + k] = sim.0; 
-                for val in sim.1.iter() {
-                    secondary_cases[i].push(val.to_owned());
-                }
+                for val in sim.1.iter() {sc1[i].push(val.to_owned());}
+                for val in sim.2.iter() {sc2[i].push(val.to_owned());}
+                for val in sim.3.iter() {sc3[i].push(val.to_owned());}
+                for val in sim.4.iter() {sc4[i].push(val.to_owned());}
+                for val in sim.5.iter() {sc5[i].push(val.to_owned());}
+                for val in sim.6.iter() {sc6[i].push(val.to_owned());}
+                for val in sim.7.iter() {sc7[i].push(val.to_owned());}
+                for val in sim.8.iter() {sc8[i].push(val.to_owned());}
+                for val in sim.9.iter() {sc9[i].push(val.to_owned());}
+                for val in sim.10.iter() {sc10[i].push(val.to_owned());}
             }
         }
     }
@@ -149,7 +168,17 @@ fn big_sellke_sec_cases(taus: Vec<f64>, networks: usize, iterations: usize, n: u
         let dict = PyDict::new_bound(py);
         
         dict.set_item("r0_1", r01.to_object(py))?;
-        dict.set_item("secondary_cases", secondary_cases.to_object(py))?;
+        dict.set_item("secondary_cases1", sc1.to_object(py))?;
+        dict.set_item("secondary_cases2", sc1.to_object(py))?;
+        dict.set_item("secondary_cases3", sc1.to_object(py))?;
+        dict.set_item("secondary_cases4", sc1.to_object(py))?;
+        dict.set_item("secondary_cases5", sc1.to_object(py))?;
+        dict.set_item("secondary_cases6", sc1.to_object(py))?;
+        dict.set_item("secondary_cases7", sc1.to_object(py))?;
+        dict.set_item("secondary_cases8", sc1.to_object(py))?;
+        dict.set_item("secondary_cases9", sc1.to_object(py))?;
+        dict.set_item("secondary_cases10", sc1.to_object(py))?;
+
         
         // Convert dict to PyObject and return
         Ok(dict.into())

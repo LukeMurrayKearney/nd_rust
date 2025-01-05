@@ -1,7 +1,7 @@
 import nd_python_avon as nd_p 
 import numpy as np
 import json
-n, iters = 100_000, 48
+n, iters = 100_000, 30
 
 buckets = np.array([5,12,18,30,40,50,60,70])
 partitions = [0.058*n, 0.145*n, 0.212*n, 0.364*n, 0.497*n, 0.623*n, 0.759*n, 0.866*n, n]
@@ -24,7 +24,7 @@ for i, data in enumerate(datas):
             params = []
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=5,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j], secondary_cases=True)
-        with open(f'../output_data/simulations/big/sellke/SIR/5_{data}_{model}_{scales[j]}_sc.json','w') as f:
+        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=3,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j], secondary_cases=True)
+        with open(f'../output_data/simulations/big/sellke/SIR/6_{data}_{model}_{scales[j]}_sc.json','w') as f:
             json.dump(result, f)
 print('done')
