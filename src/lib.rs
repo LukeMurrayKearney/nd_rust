@@ -169,15 +169,15 @@ fn big_sellke_sec_cases(taus: Vec<f64>, networks: usize, iterations: usize, n: u
         
         dict.set_item("r0_1", r01.to_object(py))?;
         dict.set_item("secondary_cases1", sc1.to_object(py))?;
-        dict.set_item("secondary_cases2", sc1.to_object(py))?;
-        dict.set_item("secondary_cases3", sc1.to_object(py))?;
-        dict.set_item("secondary_cases4", sc1.to_object(py))?;
-        dict.set_item("secondary_cases5", sc1.to_object(py))?;
-        dict.set_item("secondary_cases6", sc1.to_object(py))?;
-        dict.set_item("secondary_cases7", sc1.to_object(py))?;
-        dict.set_item("secondary_cases8", sc1.to_object(py))?;
-        dict.set_item("secondary_cases9", sc1.to_object(py))?;
-        dict.set_item("secondary_cases10", sc1.to_object(py))?;
+        dict.set_item("secondary_cases2", sc2.to_object(py))?;
+        dict.set_item("secondary_cases3", sc3.to_object(py))?;
+        dict.set_item("secondary_cases4", sc4.to_object(py))?;
+        dict.set_item("secondary_cases5", sc5.to_object(py))?;
+        dict.set_item("secondary_cases6", sc6.to_object(py))?;
+        dict.set_item("secondary_cases7", sc7.to_object(py))?;
+        dict.set_item("secondary_cases8", sc8.to_object(py))?;
+        dict.set_item("secondary_cases9", sc9.to_object(py))?;
+        dict.set_item("secondary_cases10", sc10.to_object(py))?;
 
         
         // Convert dict to PyObject and return
