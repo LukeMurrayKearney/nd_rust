@@ -11,10 +11,11 @@ models = ['dpln']
 scales = ['fit1', 'fit2']
 
 ## 0
-taus = [[[0.2,0.26,0.34]],
-        [[0.15,0.2,0.26]],
-        [[0.115,0.145,0.185]]]
-
+# taus = [[[0.2,0.26,0.34]],
+#         [[0.15,0.2,0.26]],
+#         [[0.115,0.145,0.185]]]
+## last
+taus = []
 
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
@@ -25,6 +26,6 @@ for i, data in enumerate(datas):
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
         result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=20,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j],secondary_cases=True)
-        with open(f'../output_data/simulations/big/sellke/SIR/new_4_{data}_{model}_{scales[j]}_sc.json','w') as f:
+        with open(f'../output_data/simulations/big/sellke/SIR/last_0_{data}_{model}_{scales[j]}_sc.json','w') as f:
             json.dump(result, f)
 print('done')
