@@ -15,7 +15,9 @@ scales = ['fit1', 'fit2']
 #         [[0.15,0.2,0.26]],
 #         [[0.115,0.145,0.185]]]
 ## last
-taus = []
+taus = [[[0.0952]],
+        [[0.1027]],
+        [[0.2032]]]
 
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
