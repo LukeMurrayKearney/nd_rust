@@ -72,7 +72,7 @@ for i, data in enumerate(datas):
         #     result['zeros'].append(len([a for a in network['degrees'] if a == 0]))
         #     result['avg_degree'].append(np.mean([a for a in network['degrees']]))
         #     result['max_degree'].append(max([a for a in network['degrees']]))
-        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j],secondary_cases=True)
-        with open(f'../output_data/simulations/big/sellke/SIR/last_1_{data}_{model}_{scales[j]}_noage5_sc.json','w') as f:
+        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=20,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j],secondary_cases=True)
+        with open(f'../output_data/simulations/big/sellke/SIR/last_2_{data}_{model}_{scales[j]}_noage5_sc.json','w') as f:
             json.dump(result, f)
 print('done')
