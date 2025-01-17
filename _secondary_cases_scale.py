@@ -15,9 +15,13 @@ scales = ['fit1', 'fit2']
 #         [[0.15,0.2,0.26]],
 #         [[0.115,0.145,0.185]]]
 ## last
-taus = [[[0.0952]],
-        [[0.1027]],
-        [[0.2032]]]
+# taus = [[[0.0952]],
+#         [[0.1027]],
+#         [[0.2032]]]
+## lasty
+taus = [[[0.0942]],
+        [[0.1023]],
+        [[0.2029]]]
 
 for i, data in enumerate(datas):
     for j, model in enumerate(models):
@@ -27,7 +31,7 @@ for i, data in enumerate(datas):
             params = []
         else:
             params = np.genfromtxt(f'input_data/parameters/params_{data}_{model}.csv', delimiter=',')
-        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=20,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j],secondary_cases=True)
-        with open(f'../output_data/simulations/big/sellke/SIR/last_4_{data}_{model}_{scales[j]}_sc.json','w') as f:
+        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=10,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j],secondary_cases=True)
+        with open(f'../output_data/simulations/big/sellke/SIR/lasty_0_{data}_{model}_{scales[j]}_sc.json','w') as f:
             json.dump(result, f)
 print('done')
