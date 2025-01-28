@@ -47,7 +47,7 @@ scales = ['fit1']
 # taus = [[np.arange(0.07,0.11,0.002)]]
 # taus = [[np.arange(0.05,0.11,0.002)]]
 ## 14,15
-taus = [[np.arange(0.2,0.605,0.005)]]
+taus = [[np.arange(0.1,0.605,0.005)]]
 # taus = [[np.arange(0.09,0.4,0.005)]]
 # taus = [[np.arange(0.05,0.3,0.005)]]
 
@@ -72,7 +72,7 @@ for i, data in enumerate(datas):
         #     result['zeros'].append(len([a for a in network['degrees'] if a == 0]))
         #     result['avg_degree'].append(np.mean([a for a in network['degrees']]))
         #     result['max_degree'].append(max([a for a in network['degrees']]))
-        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=3,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j])
-        with open(f'../output_data/simulations/big/sellke/SIR/27_{data}_{model}_{scales[j]}_noage.json','w') as f:
+        result = nd_p.big_sellke_sims(partitions=partitions,contact_matrix=contact_matrix,network_params=params,n=n,dist_type=model,num_networks=1,iterations=iters, taus=taus[i][j],prop_infec=10/n, scaling=scales[j])
+        with open(f'../output_data/simulations/big/sellke/SIR/28_{data}_{model}_{scales[j]}_noage.json','w') as f:
             json.dump(result, f)
 print('done')
